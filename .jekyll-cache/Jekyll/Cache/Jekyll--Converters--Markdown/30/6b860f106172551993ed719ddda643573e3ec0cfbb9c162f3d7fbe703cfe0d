@@ -1,0 +1,378 @@
+I"gf<h1 id="index-rollups-api">Index rollups API</h1>
+
+<p>Use the index rollup operations to programmatically work with index rollup jobs.</p>
+
+<hr />
+
+<h4 id="table-of-contents">Table of contents</h4>
+<ul id="markdown-toc">
+  <li><a href="#create-or-update-an-index-rollup-job" id="markdown-toc-create-or-update-an-index-rollup-job">Create or update an index rollup job</a></li>
+  <li><a href="#get-an-index-rollup-job" id="markdown-toc-get-an-index-rollup-job">Get an index rollup job</a></li>
+  <li><a href="#delete-an-index-rollup-job" id="markdown-toc-delete-an-index-rollup-job">Delete an index rollup job</a></li>
+  <li><a href="#start-or-stop-an-index-rollup-job" id="markdown-toc-start-or-stop-an-index-rollup-job">Start or stop an index rollup job</a></li>
+  <li><a href="#explain-an-index-rollup-job" id="markdown-toc-explain-an-index-rollup-job">Explain an index rollup job</a></li>
+</ul>
+
+<hr />
+
+<h2 id="create-or-update-an-index-rollup-job">Create or update an index rollup job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Creates or updates an index rollup job.
+You must provide the <code class="language-plaintext highlighter-rouge">seq_no</code> and <code class="language-plaintext highlighter-rouge">primary_term</code> parameters.</p>
+
+<h4 id="request">Request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_rollup/jobs/&lt;rollup_id&gt;</span><span class="w"> </span><span class="err">//</span><span class="w"> </span><span class="err">Create</span><span class="w">
+</span><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_rollup/jobs/&lt;rollup_id&gt;?if_seq_no=</span><span class="mi">1</span><span class="err">&amp;if_primary_term=</span><span class="mi">1</span><span class="w"> </span><span class="err">//</span><span class="w"> </span><span class="err">Update</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"rollup"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"nyc-taxi-data"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollup-nyc-taxi-data"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Days"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Example rollup job"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"delay"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="s2">"rollup_all"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"nyc_taxi_all"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"example_rollup_index_all"</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"continuous"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"date_histogram"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tpep_pickup_datetime"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"fixed_interval"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1h"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"timezone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"America/Los_Angeles"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PULocationID"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"passenger_count"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"avg"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"max"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"value_count"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">]</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You can specify the following options.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Options</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">source_index</code></td>
+      <td style="text-align: left">The name of the detector.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">target_index</code></td>
+      <td style="text-align: left">Specify the target index that the rolled up data is ingested into. You can either create a new target index or use an existing index. The target index cannot be a combination of raw and rolled up data. This field supports dynamically generated index names like <code class="language-plaintext highlighter-rouge">rollup_{{ctx.source_index}}</code>, where <code class="language-plaintext highlighter-rouge">source_index</code> cannot contain wildcards.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">schedule</code></td>
+      <td style="text-align: left">Schedule of the index rollup job which can be an interval or a cron expression.</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">schedule.interval</code></td>
+      <td style="text-align: left">Specify the frequency of execution of the rollup job.</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">schedule.interval.start_time</code></td>
+      <td style="text-align: left">Start time of the interval.</td>
+      <td style="text-align: left">Timestamp</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">schedule.interval.period</code></td>
+      <td style="text-align: left">Define the interval period.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">schedule.interval.unit</code></td>
+      <td style="text-align: left">Specify the time unit of the interval.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">schedule.interval.cron</code></td>
+      <td style="text-align: left">Optionally, specify a cron expression to define therollup frequency.</td>
+      <td style="text-align: left">List</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">schedule.interval.cron.expression</code></td>
+      <td style="text-align: left">Specify a Unix cron expression.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">schedule.interval.cron.timezone</code></td>
+      <td style="text-align: left">Specify timezones as defined by the IANA Time Zone Database. Defaults to UTC.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">description</code></td>
+      <td style="text-align: left">Optionally, describe the rollup job.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">enabled</code></td>
+      <td style="text-align: left">When true, the index rollup job is scheduled. Default is true.</td>
+      <td style="text-align: left">Boolean</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">continuous</code></td>
+      <td style="text-align: left">Specify whether or not the index rollup job continuously rolls up data forever or just executes over the current data set once and stops. Default is false.</td>
+      <td style="text-align: left">Boolean</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">error_notification</code></td>
+      <td style="text-align: left">Set up a Mustache message template sent for error notifications. For example, if an index rollup job fails, the system sends a message to a Slack channel.</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">page_size</code></td>
+      <td style="text-align: left">Specify the number of buckets to paginate through at a time while rolling up.</td>
+      <td style="text-align: left">Number</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">delay</code></td>
+      <td style="text-align: left">The number of milliseconds to delay execution of the index rollup job.</td>
+      <td style="text-align: left">Long</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions</code></td>
+      <td style="text-align: left">Specify aggregations to create dimensions for the roll up time window.</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.date_histogram</code></td>
+      <td style="text-align: left">Specify either fixed_interval or calendar_interval, but not both. Either one limits what you can query in the target index.</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.date_histogram.fixed_interval</code></td>
+      <td style="text-align: left">Specify the fixed interval for aggregations in milliseconds, seconds, minutes, hours, or days.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.date_histogram.calendar_interval</code></td>
+      <td style="text-align: left">Specify the calendar interval for aggregations in minutes, hours, days, weeks, months, quarters, or years.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.date_histogram.field</code></td>
+      <td style="text-align: left">Specify the date field used in date histogram aggregation.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.date_histogram.timezone</code></td>
+      <td style="text-align: left">Specify the timezones as defined by the IANA Time Zone Database. The default is UTC.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.terms</code></td>
+      <td style="text-align: left">Specify the term aggregations that you want to roll up.</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.terms.fields</code></td>
+      <td style="text-align: left">Specify terms aggregation for compatible fields.</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.histogram</code></td>
+      <td style="text-align: left">Specify the histogram aggregations that you want to roll up.</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.histogram.field</code></td>
+      <td style="text-align: left">Add a field for histogram aggregations.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.histogram.interval</code></td>
+      <td style="text-align: left">Specify the histogram aggregation interval for the field.</td>
+      <td style="text-align: left">Long</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.metrics</code></td>
+      <td style="text-align: left">Specify a list of objects that represent the fields and metrics that you want to calculate.</td>
+      <td style="text-align: left">Nested object</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.metrics.field</code></td>
+      <td style="text-align: left">Specify the field that you want to perform metric aggregations on.</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">dimensions.metrics.field.metrics</code></td>
+      <td style="text-align: left">Specify the metric aggregations you want to calculate for the field.</td>
+      <td style="text-align: left">Multiple strings</td>
+      <td style="text-align: left">No</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="sample-response">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollup_id"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_seqNo"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_primaryTerm"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"rollup"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="get-an-index-rollup-job">Get an index rollup job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Returns all information about an index rollup job based on the <code class="language-plaintext highlighter-rouge">rollup_id</code>.</p>
+
+<h4 id="request-1">Request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_rollup/jobs/&lt;rollup_id&gt;</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-1">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"my_rollup"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_seqNo"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_primaryTerm"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"rollup"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="delete-an-index-rollup-job">Delete an index rollup job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Deletes an index rollup job based on the <code class="language-plaintext highlighter-rouge">rollup_id</code>.</p>
+
+<h4 id="request-2">Request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">DELETE</span><span class="w"> </span><span class="err">_plugins/_rollup/jobs/&lt;rollup_id&gt;</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-2">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mi">200</span><span class="w"> </span><span class="err">OK</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="start-or-stop-an-index-rollup-job">Start or stop an index rollup job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Start or stop an index rollup job.</p>
+
+<h4 id="request-3">Request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">_plugins/_rollup/jobs/&lt;rollup_id&gt;/_start</span><span class="w">
+</span><span class="err">POST</span><span class="w"> </span><span class="err">_plugins/_rollup/jobs/&lt;rollup_id&gt;/_stop</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-3">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mi">200</span><span class="w"> </span><span class="err">OK</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="explain-an-index-rollup-job">Explain an index rollup job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Returns detailed metadata information about the index rollup job and its current progress.</p>
+
+<h4 id="request-4">Request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_rollup/jobs/&lt;rollup_id&gt;/_explain</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-4">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"example_rollup"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"rollup_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"example_rollup"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"last_updated_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1602014281</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"continuous"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"next_window_start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1602055591</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"next_window_end_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1602075591</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"running"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"failure_reason"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"stats"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"pages_processed"</span><span class="p">:</span><span class="w"> </span><span class="mi">342</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"documents_processed"</span><span class="p">:</span><span class="w"> </span><span class="mi">489359</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"rollups_indexed"</span><span class="p">:</span><span class="w"> </span><span class="mi">3420</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"index_time_in_ms"</span><span class="p">:</span><span class="w"> </span><span class="mi">30495</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"search_time_in_ms"</span><span class="p">:</span><span class="w"> </span><span class="mi">584922</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+:ET

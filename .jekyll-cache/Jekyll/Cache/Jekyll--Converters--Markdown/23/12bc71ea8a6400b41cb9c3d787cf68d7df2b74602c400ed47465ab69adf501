@@ -1,0 +1,29 @@
+I"'<h1 id="refresh-search-analyzer">Refresh search analyzer</h1>
+
+<p>With ISM installed, you can refresh search analyzers in real time with the following API:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">/_plugins/_refresh_search_analyzers/&lt;index</span><span class="w"> </span><span class="err">or</span><span class="w"> </span><span class="err">alias</span><span class="w"> </span><span class="err">or</span><span class="w"> </span><span class="err">wildcard&gt;</span><span class="w">
+</span></code></pre></div></div>
+<p>For example, if you change the synonym list in your analyzer, the change takes effect without you needing to close and reopen the index.</p>
+
+<p>To work, the token filter must have an <code class="language-plaintext highlighter-rouge">updateable</code> flag of <code class="language-plaintext highlighter-rouge">true</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"analyzer"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"my_synonyms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"tokenizer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"whitespace"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"filter"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="s2">"synonym"</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"filter"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"synonym"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"synonym_graph"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"synonyms_path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"synonyms.txt"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"updateable"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+:ET

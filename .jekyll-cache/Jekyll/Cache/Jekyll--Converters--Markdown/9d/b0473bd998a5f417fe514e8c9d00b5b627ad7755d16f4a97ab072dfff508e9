@@ -1,0 +1,76 @@
+I"B<h1 id="opensearch-documentation">OpenSearch documentation</h1>
+
+<p>Welcome to the OpenSearch documentation! With this documentation, you’ll learn how to use OpenSearch —  the only 100% open-source search, analytics, and visualization suite.
+We have a dedicated and growing number of technical writers who are building our documentation library. We also welcome and encourage community input. To contribute, see the <a href="https://opensearch.org/source.html">Contributing</a> file. A good place to start is by browsing  issues labeled “<em>good first issue</em>.”</p>
+
+<h2 id="test-for-right-nav">test for right nav</h2>
+
+<p>hfbvhs vseh visev eisv iwe ve viwe vihw evih sjbsz fskhb vfg weuv wes fcug esvugesuigvf ugsd fjweuov uwe vu suov ouwev suw eov wueosv sjbe vuose v a</p>
+
+<h2 id="getting-started">Getting started</h2>
+
+<ul>
+  <li><a href="http://localhost:4000/docs/latest/opensearch/">About OpenSearch</a></li>
+  <li><a href="http://localhost:4000/docs/latest/quickstart/">Quickstart</a></li>
+  <li><a href="http://localhost:4000/docs/latest/opensearch/install/">Install OpenSearch</a></li>
+  <li><a href="http://localhost:4000/docs/latest/dashboards/install/">Install OpenSearch Dashboards</a></li>
+  <li><a href="https://opensearch.org/faq">See the FAQ</a></li>
+</ul>
+
+<h2 id="why-use-opensearch">Why use OpenSearch?</h2>
+
+<p>With OpenSearch, you can perform the following use cases:</p>
+
+<table style="table-layout: auto ; width: 100%;">
+<tbody>
+<tr style="text-align: center; vertical-align:center;">
+<td><img src="http://localhost:4000/docs/latest/images/1_search.png" class="no-border" alt="Fast, scalable full-text search" height="100" /></td>
+<td><img src="http://localhost:4000/docs/latest/images/2_monitoring.png" class="no-border" alt="Application and infrastructure monitoring" height="100" /></td>
+<td><img src="http://localhost:4000/docs/latest/images/3_security.png" class="no-border" alt="Security and event information management" height="100" /></td>
+<td><img src="http://localhost:4000/docs/latest/images/4_tracking.png" class="no-border" alt="Operational health tracking" height="100" /></td>
+</tr>
+<tr style="text-align: left; vertical-align:top; font-weight: bold; color: rgb(0,59,92)">
+<td>Fast, Scalable Full-text Search</td>
+<td>Application and Infrastructure Monitoring</td>
+<td>Security and Event Information Management</td>
+<td>Operational Health Tracking</td>
+</tr>
+<tr style="text-align: left; vertical-align:top;">
+<td>Help users find the right information within your application, website, or data lake catalog. </td>
+<td>Easily store and analyze log data, and set automated alerts for underperformance.</td>
+<td>Centralize logs to enable real-time security monitoring and forensic analysis.</td>
+<td>Use observability logs, metrics, and traces to monitor your applications and business in real time.</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Additional features and plugins:</strong></p>
+
+<p>OpenSearch has several features and plugins to help index, secure, monitor, and analyze your data. Most OpenSearch plugins have corresponding OpenSearch Dashboards plugins that provide a convenient, unified user interface.</p>
+<ul>
+  <li><a href="http://localhost:4000/docs/latest/monitoring-plugins/ad/">Anomaly detection</a> - Identify atypical data and receive automatic notifications</li>
+  <li><a href="http://localhost:4000/docs/latest/search-plugins/knn/">KNN</a> - Find “nearest neighbors” in your vector data</li>
+  <li><a href="http://localhost:4000/docs/latest/monitoring-plugins/pa/">Performance Analyzer</a> - Monitor and optimize your cluster</li>
+  <li><a href="http://localhost:4000/docs/latest/search-plugins/sql/">SQL</a> - Use SQL or a piped processing language to query your data</li>
+  <li><a href="http://localhost:4000/docs/latest/im-plugin/">Index State Management</a> - Automate index operations</li>
+  <li><a href="http://localhost:4000/docs/latest/ml-commons-plugin/index/">ML Commons plugin</a> - Train and execute machine-learning models</li>
+  <li><a href="http://localhost:4000/docs/latest/search-plugins/async/">Asynchronous search</a> - Run search requests in the background</li>
+  <li><a href="http://localhost:4000/docs/latest/replication-plugin/index/">Cross-cluster replication</a> - Replicate your data across multiple OpenSearch clusters</li>
+</ul>
+
+<h2 id="the-secure-path-forward">The secure path forward</h2>
+<p>OpenSearch includes a demo configuration so that you can get up and running quickly, but before using OpenSearch in a production environment, you must <a href="http://localhost:4000/docs/latest/security/configuration/index/">configure the security plugin manually</a> with your own certificates, authentication method, users, and passwords.</p>
+
+<h2 id="looking-for-the-javadoc">Looking for the Javadoc?</h2>
+
+<p>See <a href="https://opensearch.org/javadocs/">opensearch.org/javadocs/</a>.</p>
+
+<h2 id="get-involved">Get involved</h2>
+
+<p><a href="https://opensearch.org">OpenSearch</a> is supported by Amazon Web Services. All components are available under the <a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache License, Version 2.0</a> on <a href="https://github.com/opensearch-project/">GitHub</a>.
+The project welcomes GitHub issues, bug fixes, features, plugins, documentation—anything at all. To get involved, see <a href="https://opensearch.org/source.html">Contributing</a> on the OpenSearch website.</p>
+
+<hr />
+
+<p><small>OpenSearch includes certain Apache-licensed Elasticsearch code from Elasticsearch B.V. and other source code. Elasticsearch B.V. is not the source of that other source code. ELASTICSEARCH is a registered trademark of Elasticsearch B.V.</small></p>
+:ET

@@ -1,0 +1,78 @@
+I"� <h1 id="introduction-to-opensearch">Introduction to OpenSearch</h1>
+
+<p>OpenSearch is a distributed search and analytics engine based on <a href="https://lucene.apache.org/">Apache Lucene</a>. After adding your data to OpenSearch, you can perform full-text searches on it with all of the features you might expect: search by field, search multiple indices, boost fields, rank results by score, sort results by field, and aggregate results.</p>
+
+<p>Unsurprisingly, people often use search engines like OpenSearch as the backend for a search application—think <a href="https://en.wikipedia.org/wiki/Wikipedia:FAQ/Technical#What_software_is_used_to_run_Wikipedia?">Wikipedia</a> or an online store. It offers excellent performance and can scale up and down as the needs of the application grow or shrink.</p>
+
+<p>An equally popular, but less obvious use case is log analytics, in which you take the logs from an application, feed them into OpenSearch, and use the rich search and visualization functionality to identify issues. For example, a malfunctioning web server might throw a 500 error 0.5% of the time, which can be hard to notice unless you have a real-time graph of all HTTP status codes that the server has thrown in the past four hours. You can use <a href="http://localhost:4000/docs/latest/dashboards/">OpenSearch Dashboards</a> to build these sorts of visualizations from data in OpenSearch.</p>
+
+<h2 id="clusters-and-nodes">Clusters and nodes</h2>
+
+<p>Its distributed design means that you interact with OpenSearch <em>clusters</em>. Each cluster is a collection of one or more <em>nodes</em>, servers that store your data and process search requests.</p>
+
+<p>You can run OpenSearch locally on a laptop—its system requirements are minimal—but you can also scale a single cluster to hundreds of powerful machines in a data center.</p>
+
+<p>In a single node cluster, such as a laptop, one machine has to do everything: manage the state of the cluster, index and search data, and perform any preprocessing of data prior to indexing it. As a cluster grows, however, you can subdivide responsibilities. Nodes with fast disks and plenty of RAM might be great at indexing and searching data, whereas a node with plenty of CPU power and a tiny disk could manage cluster state. For more information on setting node types, see <a href="http://localhost:4000/docs/latest/opensearch/cluster/">Cluster formation</a>.</p>
+
+<h2 id="indices-and-documents">Indices and documents</h2>
+
+<p>OpenSearch organizes data into <em>indices</em>. Each index is a collection of JSON <em>documents</em>. If you have a set of raw encyclopedia articles or log lines that you want to add to OpenSearch, you must first convert them to <a href="https://www.json.org/">JSON</a>. A simple JSON document for a movie might look like this:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The Wind Rises"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"release_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2013-07-20"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>When you add the document to an index, OpenSearch adds some metadata, such as the unique document <em>ID</em>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;index-name&gt;"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"_doc"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;document-id&gt;"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_source"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The Wind Rises"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"release_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2013-07-20"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Indices also contain mappings and settings:</p>
+
+<ul>
+  <li>A <em>mapping</em> is the collection of <em>fields</em> that documents in the index have. In this case, those fields are <code class="language-plaintext highlighter-rouge">title</code> and <code class="language-plaintext highlighter-rouge">release_date</code>.</li>
+  <li>Settings include data like the index name, creation date, and number of shards.</li>
+</ul>
+
+<h2 id="primary-and-replica-shards">Primary and replica shards</h2>
+
+<p>OpenSearch splits indices into <em>shards</em> for even distribution across nodes in a cluster. For example, a 400 GB index might be too large for any single node in your cluster to handle, but split into ten shards, each one 40 GB, OpenSearch can distribute the shards across ten nodes and work with each shard individually.</p>
+
+<p>By default, OpenSearch creates a <em>replica</em> shard for each <em>primary</em> shard. If you split your index into ten shards, for example, OpenSearch also creates ten replica shards. These replica shards act as backups in the event of a node failure—OpenSearch distributes replica shards to different nodes than their corresponding primary shards—but they also improve the speed and rate at which the cluster can process search requests. You might specify more than one replica per index for a search-heavy workload.</p>
+
+<p>Despite being a piece of an OpenSearch index, each shard is actually a full Lucene index—confusing, we know. This detail is important, though, because each instance of Lucene is a running process that consumes CPU and memory. More shards is not necessarily better. Splitting a 400 GB index into 1,000 shards, for example, would place needless strain on your cluster. A good rule of thumb is to keep shard size between 10–50 GB.</p>
+
+<h2 id="rest-api">REST API</h2>
+
+<p>You interact with OpenSearch clusters using the REST API, which offers a lot of flexibility. You can use clients like <a href="https://curl.haxx.se/">curl</a> or any programming language that can send HTTP requests. To add a JSON document to an OpenSearch index (i.e. index a document), you send an HTTP request:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">https://&lt;host&gt;:&lt;port&gt;/&lt;index-name&gt;/_doc/&lt;document-id&gt;</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The Wind Rises"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"release_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2013-07-20"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>To run a search for the document:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET https://&lt;host&gt;:&lt;port&gt;/&lt;index-name&gt;/_search?q=wind
+</code></pre></div></div>
+
+<p>To delete the document:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DELETE https://&lt;host&gt;:&lt;port&gt;/&lt;index-name&gt;/_doc/&lt;document-id&gt;
+</code></pre></div></div>
+
+<p>You can change most OpenSearch settings using the REST API, modify indices, check the health of the cluster, get statistics—almost everything.</p>
+:ET

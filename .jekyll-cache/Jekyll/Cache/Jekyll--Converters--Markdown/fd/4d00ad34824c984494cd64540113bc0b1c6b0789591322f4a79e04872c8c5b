@@ -1,0 +1,234 @@
+I"8<h1 id="elysium-full-text-search">Elysium Full Text Search</h1>
+<p class="label label-yellow">search engine</p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Elysium Search is a search tool designed to help users quickly find and filter data within a database. It allows users to search for specific values or patterns within a dataset, and offers a range of options for customizing the search process.</p>
+
+<h2 id="how-to-guides">How to Guides</h2>
+
+<h3 id="add-index-to-add-an-index-to-elysium-search-follow-these-steps">Add Index To add an index to Elysium Search, follow these steps:</h3>
+<ol>
+  <li>Open the Elysium Search.</li>
+  <li>Click on the three horizontal bars to open side menu.</li>
+  <li>Click on the “Stack Management“ button.<br />
+<img src="/docs/latest/images/s1.png" alt="Policy" /></li>
+  <li>Click on the “Index Patterns” button.</li>
+  <li>Click on the “Create Index Pattern” button.</li>
+  <li>Search for the table name</li>
+  <li>Click on the “Next Step“ button and wait until the load completes (at the right top corner).<br />
+<img src="/docs/latest/images/s2.png" alt="Policy" /></li>
+  <li>Once loaded use “Time field“ dropdown to select the timestamp.</li>
+  <li>Selecting timestamp is mandatory to preform search. Do not create index without selecting the timestamp.<br />
+<img src="/docs/latest/images/s3.png" alt="Policy" /></li>
+  <li>Click on the “Create Index pattern” button.</li>
+</ol>
+
+<h3 id="set-result-limit-for-a-search-in-elysium-search-follow-these-steps">Set Result Limit for a search in Elysium Search, follow these steps:</h3>
+<ol>
+  <li>Open the Elysium Search.</li>
+  <li>Click on the three horizontal bars to open side menu.</li>
+  <li>Click on the “Stack Management“ button.<br />
+<img src="/docs/latest/images/s4.png" alt="Policy" /></li>
+  <li>Click on the “Advanced Settings” button.</li>
+  <li>Find “Number of rows” and change to desired number.<br />
+<img src="/docs/latest/images/s6.png" alt="Policy" /></li>
+  <li>Click on the “Save changes” to save the setting.<br />
+<img src="/docs/latest/images/s7.png" alt="Policy" /></li>
+</ol>
+
+<h3 id="elysium-search-allows-users-to-specify-the-time-zone-for-their-searches-to-set-the-time-zone-follow-these-steps">Elysium Search allows users to specify the time zone for their searches. To set the time zone, follow these steps:</h3>
+<ol>
+  <li>Open the Elysium SaaS.</li>
+  <li>Click on the “user icon” at the top right corner and then click “My account“.<br />
+<img src="/docs/latest/images/s8.png" alt="Policy" /></li>
+  <li>Click “Timezone” for the dropdown and select to the desired time zone.</li>
+  <li>Once selected then Click on the button “Save“ which requires password.<br />
+<img src="/docs/latest/images/s9.png" alt="Policy" /></li>
+  <li>Enter the password and click on the button “YES“.<br />
+<img src="/docs/latest/images/s10.png" alt="Policy" /></li>
+</ol>
+
+<h3 id="how-to-search">How to search:</h3>
+<ol>
+  <li>Open the Elysium Search.</li>
+  <li>Click on the three horizontal bars to open side menu.</li>
+  <li>Click on the “Discover“ button.<br />
+<img src="/docs/latest/images/s11.png" alt="Policy" /></li>
+  <li>Click on the “index“ dropdown to select the index on which search needs to performed.<br />
+<img src="/docs/latest/images/s12.png" alt="Policy" /></li>
+  <li>Select the time range from right top corner.<br />
+<img src="/docs/latest/images/s13.png" alt="Policy" /></li>
+  <li>Use search bar for entering different types of searches.<br />
+<img src="/docs/latest/images/s14.png" alt="Policy" /></li>
+  <li>Click on the “Refresh“/”Update” button for results.<br />
+<img src="/docs/latest/images/s15.png" alt="Policy" /></li>
+</ol>
+
+<h2 id="different-types-of-searches-you-can-use-to-filter-data">Different types of searches you can use to filter data.</h2>
+
+<h3 id="unquoted-search">Unquoted Search:</h3>
+
+<p>Use unquoted search to filter data that partially matches with the value. For example, to filter data where the username field values are like “john white”, “john whitehead”,”sara white”, etc., use the following syntax:</p>
+
+<p><code class="language-plaintext highlighter-rouge">username: white</code></p>
+
+<p>The field parameter is optional. If not provided, all fields will be searched for the given value. For example, to search all fields for “white”, use the following:</p>
+
+<p><code class="language-plaintext highlighter-rouge">white</code></p>
+
+<h3 id="quoted-search">Quoted Search:</h3>
+<p>Use quoted search to filter data that exactly matches with the value. For example, to filter data where the username field value is “john white”, use the following syntax:</p>
+
+<p><code class="language-plaintext highlighter-rouge">username: "john white"</code></p>
+
+<p>The field parameter is optional. If not provided, Smart Search will be enabled and it will identify fields that might be a possible match and search those fields for the given value. For more information on Smart Search, refer Smart Search. To use Exact Match, use the following:</p>
+
+<p><code class="language-plaintext highlighter-rouge">"john white"</code></p>
+
+<h3 id="wildcard-search">Wildcard Search:</h3>
+<p>Even though unquoted search is used for partial matches, there are cases where wildcard search can be useful. To filter data that starts with “tom”, use the following syntax:</p>
+
+<p><code class="language-plaintext highlighter-rouge">username: tom*</code></p>
+
+<p>To filter data that ends with “sam”, use the following syntax:</p>
+
+<p><code class="language-plaintext highlighter-rouge">username: *sam</code></p>
+
+<p>Wildcard search can only be used with unquoted searches. If the wildcard (<em>) is used in a quoted search, it will be considered as a literal. For example, “sam</em>” will search for “sam*”.</p>
+
+<p>Ulike unquoted search which comes with default wildcards at the start and end of the input value. For example, sam will be queried as <em>sam</em>. Meaning any characters can be before and after “sam“. So, when using wildcards explicitly, it removes the default wildcards and treats the input (*) as a wildcard.</p>
+
+<p>Wildcards can also be used to find fields where a value exists. Use the following syntax to get all values without nulls:</p>
+
+<p><code class="language-plaintext highlighter-rouge">username: *</code></p>
+
+<p>Note: Wildcard Searches doesn’t query on flatten columns like raw.src.ip 
+while column is not mentioned.</p>
+
+<h3 id="matching-multiple-fields">Matching Multiple Fields:</h3>
+<p>Wildcards can also be used to query multiple fields. For example, to search for documents where any sub-field of “http.response” equals “error”, use the following:</p>
+
+<p><code class="language-plaintext highlighter-rouge">http.response.*: "error"</code></p>
+
+<h3 id="negating-a-query">Negating a Query:</h3>
+<p>To negate or exclude a set of data, use the “not” keyword. For example, to filter documents where the “http.request.method” is not “GET”, use the following query:</p>
+
+<p><code class="language-plaintext highlighter-rouge">NOT http.request.method: “GET”</code></p>
+
+<p>Negating also contains the null value while a specific search will always negate null values.</p>
+
+<h3 id="combining-multiple-queries">Combining Multiple Queries:</h3>
+<p>To combine multiple queries, use the “and” or “or” keywords. For example, to find documents where the “http.request.method” is “GET” or the “http.response.status_code” is 400, use the following query:</p>
+
+<p><code class="language-plaintext highlighter-rouge">http.request.method: “GET” OR http.response.status_code: “400”</code></p>
+
+<p>Similarly, to find documents where the “http.request.method” is “GET” and the “http.response.status_code” is 400, use this query:</p>
+
+<p><code class="language-plaintext highlighter-rouge">http.request.method: “GET” AND http.response.status_code: “400”</code></p>
+
+<p>To specify precedence when combining multiple queries, use parentheses. For example, to find documents where the “http.request.method” is “GET” and the “http.response.status_code” is 200, or the “http.request.method is POST” and “http.response.status_code” is 400, use the following:</p>
+
+<p><code class="language-plaintext highlighter-rouge">(http.request.method: “GET” AND http.response.status_code: “200”) OR (http.request.method: “POST” AND http.response.status_code: “400”)</code></p>
+
+<p>You can also use parentheses for shorthand syntax when querying multiple values for the same field. For example, to find documents where the “http.request.method” is “GET”, “POST”, or “DELETE”, use the following:</p>
+
+<p><code class="language-plaintext highlighter-rouge">http.request.method: (“GET” OR “POST” OR “DELETE”)</code></p>
+
+<p>http.request.method:”GET” OR “POST“ This would return results that either contain “GET “in the specified field http.request.method or contain the term “POST” anywhere in the document.</p>
+
+<p>Precedence: When using multiple logical operators in a search, it is important to consider the precedence of the operators. The AND operator has the highest precedence, followed by OR.</p>
+
+<p>So the search term “A AND B OR C” will be evaluated as “(A AND B) OR C”, while the search term “A OR B AND C” will be evaluated as “A OR (B AND C)”.</p>
+
+<h3 id="escaping-special-characters">Escaping Special Characters:</h3>
+<p>There may be times when you need to search for a value that includes special characters. In these cases, you will need to escape these characters.</p>
+
+<p>To search for documents where  http.request.referrer  is  https://example.com, use either of the following queries:</p>
+
+<p><code class="language-plaintext highlighter-rouge">http.request.referrer: "https://example.com"</code></p>
+
+<p><code class="language-plaintext highlighter-rouge">http.request.referrer: https\://example.com </code></p>
+
+<p>You must escape following characters (unless surrounded by quotes/quoted search): 
+( ) : &lt; &gt; “ * { }</p>
+
+<h3 id="smart-search">Smart Search:</h3>
+<p>Smart Search is a feature that enables searching without specifying the field. When using Smart Search, the system will identify fields that might be a possible match and search those fields for the given value.</p>
+
+<p>For example, if you search for “john white” without specifying a field, the system will search all fields that contain “john white” .
+To use Smart Search, enclose the search value in quotes. For example:</p>
+
+<p><code class="language-plaintext highlighter-rouge">"john white".</code></p>
+
+<h3 id="numeric-range-search">Numeric Range Search:</h3>
+<p>Elysium Search supports numeric searches, but there are a few considerations to keep in mind.</p>
+
+<p>Rounding: Elysium Search rounds numeric values to the nearest value that can be represented in double-precision floating-point format. This can affect the accuracy of numeric searches.</p>
+
+<p>Value will be rounded after 9 digits after the decimal point and values with a leading zero.. In cases where more precision is needed , users should use Double Quotes to treat the number as a string.</p>
+
+<p><code class="language-plaintext highlighter-rouge">110.0 is treated as 110 and 10.00000 is treated as 10.</code></p>
+
+<p><code class="language-plaintext highlighter-rouge">Score : 123</code></p>
+
+<p><code class="language-plaintext highlighter-rouge">Score : “1.123456789123“</code></p>
+
+<p><code class="language-plaintext highlighter-rouge">Score : “10.0“</code></p>
+
+<p>Any number more than 16 digits (for both +ve and –ve numbers). We should use double quotes in that case. Adding  a + in front treats the search value as a string.</p>
+
+<p>Hex number such as 0xabcd is not supported as a number. It must be searched as string.</p>
+
+<p>For example, to search for the value “01”, you would enter “01” in the search bar.</p>
+
+<p>You can also use the “&gt;” and “&lt;” operators to specify an open-ended range. For example, to search for documents where the “age” field is greater than 18, use the following:
+<code class="language-plaintext highlighter-rouge">age &gt; 18</code></p>
+
+<p>To search for documents where the “age” field is less than 25, use the following:
+<code class="language-plaintext highlighter-rouge">age &lt; 25</code></p>
+
+<h3 id="case-sensitivity">Case Sensitivity:</h3>
+
+<p>Elysium Search is case-Sensitive by default, meaning that it does distinguish between uppercase and lowercase characters in searches. However, you can enable case-Insensitivity by using the following steps.</p>
+<ol>
+  <li>Open the Elysium Search.</li>
+  <li>Click on the three horizontal bars to open side menu.</li>
+  <li>Click on the “Discover“ button to open search.</li>
+  <li>
+    <p>On the search page find “settings icon”</p>
+  </li>
+  <li>Click on the “settings icon” button.</li>
+  <li>Click on the “Case Sensitivity“ toggle to turn it on or off.</li>
+</ol>
+
+<h3 id="highlights">Highlights:</h3>
+
+<p>Unquoted search will highlight the exact value entered while matching doing a partial match.</p>
+
+<p>User: Sannith → User: Sannith Reddy</p>
+
+<p>Quoted search will highlight the exact value entered.</p>
+
+<p>User: “Sannith Reddy”: → User: Sannith Reddy</p>
+
+<p>Wildcard matches will highlight depending on the *.</p>
+
+<p>User : *Reddy → User: Sannith Reddy</p>
+
+<h3 id="limitations">Limitations</h3>
+
+<p>Elysium Search has a number of limitations that users should be aware of:</p>
+<ul>
+  <li>Arithmetic expressions and variables are not supported.</li>
+  <li>Only a limited set of character sets is supported.</li>
+  <li>Searches on timestamps are not available currently.</li>
+</ul>
+
+<h3 id="workarounds">Workarounds</h3>
+
+<p>Arithmetic Expressions: You will need to use an alternative approach if you need to perform calculations in your searches. One option is to you use a script to pre-process your data and add calculated fields,, which you can then search using Elysium Search or User can also use Dashboards(Looker).</p>
+
+<p>Copy/Paste: users have to be careful while copy pasting the results to search as there might be chances to characters which needs to be escaped or numbers with accurate precision.</p>
+
+:ET

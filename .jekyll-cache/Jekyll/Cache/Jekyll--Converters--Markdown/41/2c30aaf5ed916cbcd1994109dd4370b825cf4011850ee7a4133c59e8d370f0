@@ -1,0 +1,143 @@
+I"<C<h1 id="ism-error-prevention-api">ISM Error Prevention API</h1>
+
+<p>The ISM Error Prevention API allows you to enable Index State Management (ISM) error prevention and check the validation status and message.</p>
+
+<h2 id="enable-error-prevention-validation">Enable error prevention validation</h2>
+
+<p>You can configure error prevention validation by setting the <code class="language-plaintext highlighter-rouge">plugins.index_state_management.validation_service.enabled</code> parameter.</p>
+
+<h4 id="sample-request">Sample request</h4>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT _cluster/settings
+<span class="o">{</span>
+   <span class="s2">"persistent"</span>:<span class="o">{</span>
+      <span class="s2">"plugins.index_state_management.validation_action.enabled"</span>: <span class="nb">true</span>
+   <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h4 id="sample-response">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"acknowledged"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"persistent"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"plugins"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"index_state_management"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"validation_action"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"enabled"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"true"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"transient"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="check-validation-status-and-message-via-the-explain-api">Check validation status and message via the Explain API</h2>
+
+<p>Pass the <code class="language-plaintext highlighter-rouge">validate_action=true</code> path parameter in the Explain API URI to see the validation status and message.</p>
+
+<h4 id="sample-request-1">Sample request</h4>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET _plugins/_ism/explain/test-000001?validate_action<span class="o">=</span><span class="nb">true</span>
+</code></pre></div></div>
+
+<h4 id="sample-response-1">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"test-000001"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"index.plugins.index_state_management.policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index.opendistro.index_state_management.policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test-000001"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index_uuid"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"CgKsxFmQSIa8dWqpbSJmyA"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_seq_no"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">-2</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_primary_term"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"rolled_over"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index_creation_date"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667410460649</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"state"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667410766045</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"action"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667411127803</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"failed"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"consumed_retries"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"last_retry_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"step"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"attempt_rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667411127803</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"step_status"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"starting"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"retry_info"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"failed"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"consumed_retries"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"info"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Previous action was not able to update IndexMetaData."</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"validate"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"validation_message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Missing rollover_alias index setting [index=test-000001]"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"validation_status"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"re_validating"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"total_managed_indices"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If you pass the parameter without a value or false, then it doesn’t return the validation status and message. Only if you pass <code class="language-plaintext highlighter-rouge">validate_action=true</code> will the response will return the validation status and message.</p>
+
+<h4 id="sample-request-2">Sample request</h4>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET _plugins/_ism/explain/test-000001?validate_action<span class="o">=</span><span class="nb">false</span>
+ <span class="nt">---</span> OR <span class="nt">---</span>
+GET _plugins/_ism/explain/test-000001
+</code></pre></div></div>
+
+<h4 id="sample-response-2">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"test-000001"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"index.plugins.index_state_management.policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index.opendistro.index_state_management.policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test-000001"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index_uuid"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"CgKsxFmQSIa8dWqpbSJmyA"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_seq_no"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">-2</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_primary_term"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"rolled_over"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index_creation_date"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667410460649</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"state"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667410766045</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"action"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667411127803</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"failed"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"consumed_retries"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"last_retry_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"step"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"attempt_rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667411127803</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"step_status"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"starting"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"retry_info"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"failed"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"consumed_retries"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"info"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Previous action was not able to update IndexMetaData."</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"total_managed_indices"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+:ET

@@ -1,0 +1,76 @@
+I"<h1 id="ism-error-prevention">ISM error prevention</h1>
+
+<p>Error prevention validates Index State Management (ISM) actions before they are performed in order to prevent actions from failing. It also outputs additional information from the action validation results in the response of the <a href="http://localhost:4000/docs/latest/im-plugin/ism/api/#explain-index">Index Explain API</a>. Validation rules and troubleshooting of each action are listed in the following sections.</p>
+
+<hr />
+
+<h4 id="table-of-contents">Table of contents</h4>
+<ol id="markdown-toc">
+  <li><a href="#rollover" id="markdown-toc-rollover">rollover</a></li>
+  <li><a href="#delete" id="markdown-toc-delete">delete</a></li>
+  <li><a href="#force_merge" id="markdown-toc-force_merge">force_merge</a></li>
+  <li><a href="#replica_count" id="markdown-toc-replica_count">replica_count</a></li>
+  <li><a href="#open" id="markdown-toc-open">open</a></li>
+  <li><a href="#read_only" id="markdown-toc-read_only">read_only</a></li>
+  <li><a href="#read_write" id="markdown-toc-read_write">read_write</a></li>
+</ol>
+
+<hr />
+
+<h2 id="rollover">rollover</h2>
+
+<p>ISM does not perform a <code class="language-plaintext highlighter-rouge">rollover</code> action for an index under any of these conditions:</p>
+
+<ul>
+  <li><a href="http://localhost:4000/docs/latest/im-plugin/ism/error-prevention/resolutions/#the-index-is-not-the-write-index">The index is not the write index</a>.</li>
+  <li><a href="http://localhost:4000/docs/latest/im-plugin/ism/error-prevention/resolutions/#the-index-does-not-have-an-alias">The index does not have an alias</a>.</li>
+  <li><a href="http://localhost:4000/docs/latest/im-plugin/ism/error-prevention/resolutions/#the-rollover-policy-misses-rollover_alias-index-setting">The rollover policy does not contain a rollover_alias index setting</a>.</li>
+  <li><a href="http://localhost:4000/docs/latest/im-plugin/ism/error-prevention/resolutions/#skipping-rollover-action-is-true">Skipping of a rollover action has occured</a>.</li>
+  <li><a href="http://localhost:4000/docs/latest/im-plugin/ism/error-prevention/resolutions/#this-index-has-already-been-rolled-over-successfully">The index has already been rolled over using the alias successfully</a>.</li>
+</ul>
+
+<h2 id="delete">delete</h2>
+
+<p>ISM does not perform a <code class="language-plaintext highlighter-rouge">delete</code> action for an index under any of these conditions:</p>
+
+<ul>
+  <li>The index does not exist.</li>
+  <li>The index name is invalid.</li>
+  <li>The index is the write index for a data stream.</li>
+</ul>
+
+<h2 id="force_merge">force_merge</h2>
+
+<p>ISM does not perform a <code class="language-plaintext highlighter-rouge">force_merge</code> action for an index if its dataset is too large and exceeds the threshold.</p>
+
+<h2 id="replica_count">replica_count</h2>
+
+<p>ISM does not perform a <code class="language-plaintext highlighter-rouge">replica_count</code> action for an index under any of these conditions:</p>
+
+<ul>
+  <li>The amount of data exceeds the threshold.</li>
+  <li>The number of shards exceeds the maximum.</li>
+</ul>
+
+<h2 id="open">open</h2>
+
+<p>ISM does not perform an <code class="language-plaintext highlighter-rouge">open</code> action for an index under any of these conditions:</p>
+
+<ul>
+  <li>The index is blocked.</li>
+  <li>The number of shards exceeds the maximum.</li>
+</ul>
+
+<h2 id="read_only">read_only</h2>
+
+<p>ISM does not perform a <code class="language-plaintext highlighter-rouge">read_only</code> action for an index under any of these conditions:</p>
+
+<ul>
+  <li>The index is blocked.</li>
+  <li>The amount of data exceeds the threshold.</li>
+</ul>
+
+<h2 id="read_write">read_write</h2>
+
+<p>ISM does not perform a <code class="language-plaintext highlighter-rouge">read_write</code> action for an index if the index is blocked.</p>
+:ET

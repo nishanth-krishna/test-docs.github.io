@@ -1,0 +1,648 @@
+I"j�<h1 id="ism-api">ISM API</h1>
+
+<p>Use the index state management operations to programmatically work with policies and managed indexes.</p>
+
+<hr />
+
+<h4 id="table-of-contents">Table of contents</h4>
+<ul id="markdown-toc">
+  <li><a href="#create-policy" id="markdown-toc-create-policy">Create policy</a></li>
+  <li><a href="#add-policy" id="markdown-toc-add-policy">Add policy</a></li>
+  <li><a href="#update-policy" id="markdown-toc-update-policy">Update policy</a></li>
+  <li><a href="#get-policy" id="markdown-toc-get-policy">Get policy</a></li>
+  <li><a href="#remove-policy-from-index" id="markdown-toc-remove-policy-from-index">Remove policy from index</a></li>
+  <li><a href="#update-managed-index-policy" id="markdown-toc-update-managed-index-policy">Update managed index policy</a></li>
+  <li><a href="#retry-failed-index" id="markdown-toc-retry-failed-index">Retry failed index</a></li>
+  <li><a href="#explain-index" id="markdown-toc-explain-index">Explain index</a></li>
+  <li><a href="#delete-policy" id="markdown-toc-delete-policy">Delete policy</a></li>
+  <li><a href="#error-prevention-validation" id="markdown-toc-error-prevention-validation">Error prevention validation</a></li>
+</ul>
+
+<hr />
+
+<h2 id="create-policy">Create policy</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Creates a policy.</p>
+
+<h4 id="sample-request">Sample request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_ism/policies/policy_</span><span class="mi">1</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingesting logs"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_doc_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"conditions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_index_age"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5m"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"delete"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_1"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_primary_term"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_seq_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_1"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingesting logs"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"last_updated_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1577990761311</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"error_notification"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"min_doc_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">],</span><span class="w">
+          </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+          </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"conditions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"min_index_age"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5m"</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"delete"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">],</span><span class="w">
+          </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="add-policy">Add policy</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Adds a policy to an index. This operation does not change the policy if the index already has one.</p>
+
+<h4 id="sample-request-1">Sample request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">_plugins/_ism/add/index_</span><span class="mi">1</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_1"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-1">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"updated_indices"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"failures"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"failed_indices"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p class="warning">If you use a wildcard <code class="language-plaintext highlighter-rouge">*</code> while adding a policy to an index, the ISM plugin interprets <code class="language-plaintext highlighter-rouge">*</code> as all indexes, including system indexes like <code class="language-plaintext highlighter-rouge">.opendistro-security</code>, which stores users, roles, and tenants. A delete action in your policy might accidentally delete all user roles and tenants in your cluster.
+Don’t use the broad <code class="language-plaintext highlighter-rouge">*</code> wildcard, and instead add a prefix, such as <code class="language-plaintext highlighter-rouge">my-logs*</code>, when specifying indexes with the <code class="language-plaintext highlighter-rouge">_ism/add</code> API.</p>
+
+<hr />
+
+<h2 id="update-policy">Update policy</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Updates a policy. Use the <code class="language-plaintext highlighter-rouge">seq_no</code> and <code class="language-plaintext highlighter-rouge">primary_term</code> parameters to update an existing policy. If these numbers don’t match the existing policy or the policy doesn’t exist, ISM throws an error.</p>
+
+<p>It’s possible that the policy currently applied to your index isn’t the most up-to-date policy available. To see what policy is currently applied to your index, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/api/#explain-index">Explain index</a>. To get the most up-to-date version of a policy, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/api/#get-policy">Get policy</a>.</p>
+
+<h4 id="sample-request-2">Sample request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_ism/policies/policy_</span><span class="mi">1</span><span class="err">?if_seq_no=</span><span class="mi">7</span><span class="err">&amp;if_primary_term=</span><span class="mi">1</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingesting logs"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_doc_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"conditions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_index_age"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5m"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"delete"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-2">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_1"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_primary_term"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_seq_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_1"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingesting logs"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"last_updated_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1577990934044</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"error_notification"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"min_doc_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">],</span><span class="w">
+          </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+          </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"conditions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"min_index_age"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5m"</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"delete"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">],</span><span class="w">
+          </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="get-policy">Get policy</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Gets the policy by <code class="language-plaintext highlighter-rouge">policy_id</code>.</p>
+
+<h4 id="sample-request-3">Sample request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_ism/policies/policy_</span><span class="mi">1</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-3">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_1"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_seq_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_primary_term"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_1"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingesting logs"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"last_updated_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1577990934044</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"error_notification"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_doc_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"search"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"conditions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_index_age"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5m"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"delete"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="remove-policy-from-index">Remove policy from index</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Removes any ISM policy from the index.</p>
+
+<h4 id="sample-request-4">Sample request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">_plugins/_ism/remove/index_</span><span class="mi">1</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-4">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"updated_indices"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"failures"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"failed_indices"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="update-managed-index-policy">Update managed index policy</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Updates the managed index policy to a new policy (or to a new version of the policy). You can use an index pattern to update multiple indexes at once. When updating multiple indexes, you might want to include a state filter to only affect certain managed indexes. The change policy filters out all the existing managed indexes and only applies the change to the ones in the state that you specify. You can also explicitly specify the state that the managed index transitions to after the change policy takes effect.</p>
+
+<p>A policy change is an asynchronous background process. The changes are queued and are not executed immediately by the background process. This delay in execution protects the currently running managed indexes from being put into a broken state. If the policy you are changing to has only some small configuration changes, then the change takes place immediately. For example, if the policy changes the <code class="language-plaintext highlighter-rouge">min_index_age</code> parameter in a rollover condition from <code class="language-plaintext highlighter-rouge">1000d</code> to <code class="language-plaintext highlighter-rouge">100d</code>, this change takes place immediately in its next execution. If the change modifies the state, actions, or the order of actions of the current state the index is in, then the change happens at the end of its current state before transitioning to a new state.</p>
+
+<p>In this example, the policy applied on the <code class="language-plaintext highlighter-rouge">index_1</code> index is changed to <code class="language-plaintext highlighter-rouge">policy_1</code>, which could either be a completely new policy or an updated version of its existing policy. The process only applies the change if the index is currently in the <code class="language-plaintext highlighter-rouge">searches</code> state. After this change in policy takes place, <code class="language-plaintext highlighter-rouge">index_1</code> transitions to the <code class="language-plaintext highlighter-rouge">delete</code> state.</p>
+
+<h4 id="sample-request-5">Sample request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">_plugins/_ism/change_policy/index_</span><span class="mi">1</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_1"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"include"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"searches"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-5">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"updated_indices"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"failures"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"failed_indices"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="retry-failed-index">Retry failed index</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Retries the failed action for an index. For the retry call to succeed, ISM must manage the index, and the index must be in a failed state. You can use index patterns (<code class="language-plaintext highlighter-rouge">*</code>) to retry multiple failed indexes.</p>
+
+<h4 id="sample-request-6">Sample request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">_plugins/_ism/retry/index_</span><span class="mi">1</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-6">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"updated_indices"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"failures"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"failed_indices"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<hr />
+
+<h2 id="explain-index">Explain index</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Gets the current state of the index. You can use index patterns to get the status of multiple indexes.</p>
+
+<h4 id="sample-request-7">Sample request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_ism/explain/index_</span><span class="mi">1</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-7">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"index_1"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"index.plugins.index_state_management.policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_1"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Optionally, you can add the <code class="language-plaintext highlighter-rouge">show_policy</code> parameter to your request’s path to get the policy that is currently applied to your index, which is useful for seeing whether the policy applied to your index is the latest one. To get the most up-to-date policy, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/api/#get-policy">Get Policy API</a>.</p>
+
+<h4 id="sample-request-8">Sample request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_ism/explain/index_</span><span class="mi">1</span><span class="err">?show_policy=</span><span class="kc">true</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-8">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"index_1"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"index.plugins.index_state_management.policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample-policy"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index.opendistro.index_state_management.policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample-policy"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"index_1"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index_uuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gCFlS_zcTdih8xyxf3jQ-A"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample-policy"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample-policy"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingesting logs"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"last_updated_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1647284980148</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">13</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"error_notification"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ingest"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span><span class="w">
+      </span><span class="nl">"ism_template"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"total_managed_indices"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">plugins.index_state_management.policy_id</code> setting is deprecated starting from ODFE version 1.13.0. We retain this field in the response API for consistency.</p>
+
+<hr />
+
+<h2 id="delete-policy">Delete policy</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Deletes the policy by <code class="language-plaintext highlighter-rouge">policy_id</code>.</p>
+
+<h4 id="sample-request-9">Sample request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">DELETE</span><span class="w"> </span><span class="err">_plugins/_ism/policies/policy_</span><span class="mi">1</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-9">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">".opendistro-ism-config"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_1"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"result"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deleted"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"forced_refresh"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_shards"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"successful"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"failed"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"_seq_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_primary_term"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="error-prevention-validation">Error prevention validation</h2>
+<p class="label label-purple">Introduced 2.4</p>
+
+<p>ISM allows you to run an action automatically. However, running an action can fail for a variety of reasons. You can use error prevention validation to test an action in order to rule out failures.</p>
+
+<p>To enable error prevention validation, set the <code class="language-plaintext highlighter-rouge">plugins.index_state_management.validation_service.enabled</code> setting to <code class="language-plaintext highlighter-rouge">true</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT _cluster/settings
+<span class="o">{</span>
+   <span class="s2">"persistent"</span>:<span class="o">{</span>
+      <span class="s2">"plugins.index_state_management.validation_action.enabled"</span>: <span class="nb">true</span>
+   <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h4 id="sample-response-10">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"acknowledged"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"persistent"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"plugins"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"index_state_management"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"validation_action"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"enabled"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"true"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"transient"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>To check an error prevention validation status and message, pass <code class="language-plaintext highlighter-rouge">validate_action=true</code> to the <code class="language-plaintext highlighter-rouge">_plugins/_ism/explain</code> endpoint:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET _plugins/_ism/explain/test-000001?validate_action<span class="o">=</span><span class="nb">true</span>
+</code></pre></div></div>
+
+<h4 id="sample-response-11">Sample response</h4>
+
+<p>The response contains an additional validate object with a validation message and status:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"test-000001"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"index.plugins.index_state_management.policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index.opendistro.index_state_management.policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test-000001"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index_uuid"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"CgKsxFmQSIa8dWqpbSJmyA"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_seq_no"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">-2</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_primary_term"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"rolled_over"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index_creation_date"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667410460649</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"state"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667410766045</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"action"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667411127803</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"failed"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"consumed_retries"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"last_retry_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"step"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"attempt_rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667411127803</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"step_status"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"starting"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"retry_info"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"failed"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"consumed_retries"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"info"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Previous action was not able to update IndexMetaData."</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"validate"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"validation_message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Missing rollover_alias index setting [index=test-000001]"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"validation_status"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"re_validating"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"total_managed_indices"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If you pass <code class="language-plaintext highlighter-rouge">validate_action=false</code> or do not pass a <code class="language-plaintext highlighter-rouge">validate_action</code> value to the <code class="language-plaintext highlighter-rouge">_plugins/_ism/explain</code> endpoint, the response will not contain an error prevention validation status and message:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET _plugins/_ism/explain/test-000001?validate_action<span class="o">=</span><span class="nb">false</span>
+</code></pre></div></div>
+
+<p>Or:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET _plugins/_ism/explain/test-000001
+</code></pre></div></div>
+
+<h4 id="sample-response-12">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"test-000001"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"index.plugins.index_state_management.policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index.opendistro.index_state_management.policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test-000001"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index_uuid"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"CgKsxFmQSIa8dWqpbSJmyA"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"test_rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_seq_no"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">-2</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_primary_term"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"rolled_over"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index_creation_date"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667410460649</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"state"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667410766045</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"action"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667411127803</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"failed"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"consumed_retries"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"last_retry_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"step"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"attempt_rollover"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"start_time"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1667411127803</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"step_status"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"starting"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"retry_info"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"failed"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"consumed_retries"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"info"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Previous action was not able to update IndexMetaData."</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"total_managed_indices"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+:ET

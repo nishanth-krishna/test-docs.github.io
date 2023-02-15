@@ -1,0 +1,168 @@
+I"�,<h1 id="managed-indices">Managed indices</h1>
+
+<p>You can change or update a policy using the managed index operations.</p>
+
+<p>This table lists the fields of managed index operations.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+      <th>Read Only</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">name</code></td>
+      <td style="text-align: left">The name of the managed index policy.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">index</code></td>
+      <td style="text-align: left">The name of the managed index that this policy is managing.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">index_uuid</code></td>
+      <td style="text-align: left">The uuid of the index.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">enabled</code></td>
+      <td style="text-align: left">When <code class="language-plaintext highlighter-rouge">true</code>, the managed index is scheduled and run by the scheduler.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">boolean</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">enabled_time</code></td>
+      <td style="text-align: left">The time the managed index was last enabled. If the managed index process is disabled, then this is null.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">timestamp</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">last_updated_time</code></td>
+      <td style="text-align: left">The time the managed index was last updated.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">timestamp</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">schedule</code></td>
+      <td style="text-align: left">The schedule of the managed index job.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">object</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">policy_id</code></td>
+      <td style="text-align: left">The name of the policy used by this managed index.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">policy_seq_no</code></td>
+      <td style="text-align: left">The sequence number of the policy used by this managed index.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">number</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">policy_primary_term</code></td>
+      <td style="text-align: left">The primary term of the policy used by this managed index.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">number</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">policy_version</code></td>
+      <td style="text-align: left">The version of the policy used by this managed index.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">number</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">policy</code></td>
+      <td style="text-align: left">The cached JSON of the policy for the <code class="language-plaintext highlighter-rouge">policy_version</code> that’s used during runs. If the policy is null, it means that this is the first execution of the job and the latest policy document is read in/saved.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">object</code></td>
+      <td style="text-align: left">No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">change_policy</code></td>
+      <td style="text-align: left">The information regarding what policy and state to change to.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">object</code></td>
+      <td style="text-align: left">No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">policy_name</code></td>
+      <td style="text-align: left">The name of the policy to update to. To update to the latest version, set this to be the same as the current <code class="language-plaintext highlighter-rouge">policy_name</code>.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">No</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">state</code></td>
+      <td style="text-align: left">The state of the managed index after it finishes updating. If no state is specified, it’s assumed that the policy structure did not change.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">No</td>
+      <td>Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The following example shows a managed index policy:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"managed_index"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"my_index"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"my_index"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"index_uuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sOKSOfkdsoSKeofjIS"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"enabled_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1553112384</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"last_updated_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1553112384</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MINUTES"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1553112384</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"log_rotation"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="err">...</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"change_policy"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="change-policy">Change policy</h2>
+
+<p>You can change any managed index policy, but ISM has a few constraints in place to make sure that policy changes don’t break indices.</p>
+
+<p>If an index is stuck in its current state, never proceeding, and you want to update its policy immediately, make sure that the new policy includes the same state—same name, same actions, same order—as the old policy. In this case, even if the policy is in the middle of executing an action, ISM applies the new policy.</p>
+
+<p>If you update the policy without including an identical state, ISM updates the policy only after all actions in the current state finish executing. Alternately, you can choose a specific state in your old policy after which you want the new policy to take effect.</p>
+
+<p>To change a policy using OpenSearch Dashboards, do the following:</p>
+
+<ul>
+  <li>Under <strong>Managed indices</strong>, choose the indices that you want to attach the new policy to.</li>
+  <li>To attach the new policy to indices in specific states, choose <strong>Choose state filters</strong>, and then choose those states.</li>
+  <li>Under <strong>Choose New Policy</strong>, choose the new policy.</li>
+  <li>To start the new policy for indices in the current state, choose <strong>Keep indices in their current state after the policy takes effect</strong>.</li>
+  <li>To start the new policy in a specific state, choose <strong>Start from a chosen state after changing policies</strong>, and then choose the default start state in your new policy.</li>
+</ul>
+:ET

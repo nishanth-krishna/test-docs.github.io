@@ -1,0 +1,159 @@
+I"�J<h1 id="quickstart">Quickstart</h1>
+
+<p>Get started using OpenSearch and OpenSearch Dashboards by deploying your containers with <a href="https://www.docker.com/">Docker</a>. Before proceeding, you need to <a href="https://docs.docker.com/get-docker/">get Docker</a> and <a href="https://github.com/docker/compose">Docker Compose</a> installed on your local machine.</p>
+
+<p class="note">The Docker Compose commands used in this guide are written with a hyphen (for example, <code class="language-plaintext highlighter-rouge">docker-compose</code>). If you installed Docker Desktop on your machine, which automatically installs a bundled version of Docker Compose, then you should remove the hyphen. For example, change <code class="language-plaintext highlighter-rouge">docker-compose</code> to <code class="language-plaintext highlighter-rouge">docker compose</code>.</p>
+
+<h2 id="starting-your-cluster">Starting your cluster</h2>
+
+<p>You’ll need a special file, called a Compose file, that Docker Compose uses to define and create the containers in your cluster. The OpenSearch Project provides a sample Compose file that you can use to get started. Learn more about working with Compose files by reviewing the official <a href="https://docs.docker.com/compose/compose-file/">Compose specification</a>.</p>
+
+<ol>
+  <li>Before running OpenSearch on your machine, you should disable memory paging and swapping performance on the host to improve performance and increase the number of memory maps available to OpenSearch. See <a href="http://localhost:4000/docs/latest/opensearch/install/important-settings/">important system settings</a> for more information.
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="c"># Disable memory paging and swapping.</span>
+ <span class="nb">sudo </span>swapoff <span class="nt">-a</span>
+
+ <span class="c"># Edit the sysctl config file that defines the host's max map count.</span>
+ <span class="nb">sudo </span>vi /etc/sysctl.conf
+
+ <span class="c"># Set max map count to the recommended value of 262144.</span>
+ vm.max_map_count<span class="o">=</span>262144
+
+ <span class="c"># Reload the kernel parameters.</span>
+ <span class="nb">sudo </span>sysctl <span class="nt">-p</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Download the sample Compose file to your host. You can download the file with command line utilities like <code class="language-plaintext highlighter-rouge">curl</code> and <code class="language-plaintext highlighter-rouge">wget</code>, or you can manually copy <a href="https://github.com/opensearch-project/documentation-website/blob/2.5/assets/examples/docker-compose.yml">docker-compose.yml</a> from the OpenSearch Project documentation-website repository using a web browser.
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="c"># Using cURL:</span>
+ curl <span class="nt">-O</span> https://raw.githubusercontent.com/opensearch-project/documentation-website/2.5/assets/examples/docker-compose.yml
+
+ <span class="c"># Using wget:</span>
+ wget https://raw.githubusercontent.com/opensearch-project/documentation-website/2.5/assets/examples/docker-compose.yml
+</code></pre></div>    </div>
+  </li>
+  <li>In your terminal application, navigate to the directory containing the <code class="language-plaintext highlighter-rouge">docker-compose.yml</code> file you just downloaded, and run the following command to create and start the cluster as a background process.
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> docker-compose up <span class="nt">-d</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Confirm that the containers are running with the command <code class="language-plaintext highlighter-rouge">docker-compose ps</code>. You should see an output like the following:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nv">$ </span>docker-compose ps
+ NAME                    COMMAND                  SERVICE                 STATUS              PORTS
+ opensearch-dashboards   <span class="s2">"./opensearch-dashbo…"</span>   opensearch-dashboards   running             0.0.0.0:5601-&gt;5601/tcp
+ opensearch-node1        <span class="s2">"./opensearch-docker…"</span>   opensearch-node1        running             0.0.0.0:9200-&gt;9200/tcp, 9300/tcp, 0.0.0.0:9600-&gt;9600/tcp, 9650/tcp
+ opensearch-node2        <span class="s2">"./opensearch-docker…"</span>   opensearch-node2        running             9200/tcp, 9300/tcp, 9600/tcp, 9650/tcp
+</code></pre></div>    </div>
+  </li>
+  <li>Query the OpenSearch REST API to verify that the service is running. You should use <code class="language-plaintext highlighter-rouge">-k</code> (also written as <code class="language-plaintext highlighter-rouge">--insecure</code>) to disable host name checking because the default security configuration uses demo certificates. Use <code class="language-plaintext highlighter-rouge">-u</code> to pass the default username and password (<code class="language-plaintext highlighter-rouge">admin:admin</code>).
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> curl https://localhost:9200 <span class="nt">-ku</span> admin:admin
+</code></pre></div>    </div>
+    <p>Sample response:</p>
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w"> </span><span class="p">{</span><span class="w">
+ </span><span class="nl">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"opensearch-node1"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"cluster_name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"opensearch-cluster"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"cluster_uuid"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Cd7SL5ysRSyuau325M3h9w"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+     </span><span class="nl">"distribution"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"opensearch"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"number"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2.3.0"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"build_type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"tar"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"build_hash"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"6f6e84ebc54af31a976f53af36a5c69d474a5140"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"build_date"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-09-09T00:07:12.137133581Z"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"build_snapshot"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"lucene_version"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"9.3.0"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"minimum_wire_compatibility_version"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"7.10.0"</span><span class="p">,</span><span class="w">
+     </span><span class="nl">"minimum_index_compatibility_version"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"7.0.0"</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"tagline"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"The OpenSearch Project: https://opensearch.org/"</span><span class="w">
+ </span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+  <li>Explore OpenSearch Dashboards by opening <code class="language-plaintext highlighter-rouge">http://localhost:5601/</code> in a web browser on the same host that is running your OpenSearch cluster. The default username is <code class="language-plaintext highlighter-rouge">admin</code> and the default password is <code class="language-plaintext highlighter-rouge">admin</code>.</li>
+</ol>
+
+<h2 id="create-an-index-and-field-mappings-using-sample-data">Create an index and field mappings using sample data</h2>
+
+<p>Create an index and define field mappings using a dataset provided by the OpenSearch Project. The same fictitious e-commerce data is also used for sample visualizations in OpenSearch Dashboards. To learn more, see <a href="http://localhost:4000/docs/latest/dashboards/index/">Getting started with OpenSearch Dashboards</a>.</p>
+
+<ol>
+  <li>Download <a href="https://github.com/opensearch-project/documentation-website/blob/2.5/assets/examples/ecommerce-field_mappings.json">ecommerce-field_mappings.json</a>. This file defines a <a href="http://localhost:4000/docs/latest/opensearch/mappings/">mapping</a> for the sample data you will use.
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="c"># Using cURL:</span>
+ curl <span class="nt">-O</span> https://raw.githubusercontent.com/opensearch-project/documentation-website/2.5/assets/examples/ecommerce-field_mappings.json
+
+ <span class="c"># Using wget:</span>
+ wget https://raw.githubusercontent.com/opensearch-project/documentation-website/2.5/assets/examples/ecommerce-field_mappings.json
+</code></pre></div>    </div>
+  </li>
+  <li>Download <a href="https://github.com/opensearch-project/documentation-website/blob/2.5/assets/examples/ecommerce.json">ecommerce.json</a>. This file contains the index data formatted so that it can be ingested by the bulk API. To learn more, see <a href="http://localhost:4000/docs/latest/opensearch/index-data/">index data</a> and <a href="http://localhost:4000/docs/latest/api-reference/document-apis/bulk/">Bulk</a>.
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="c"># Using cURL:</span>
+ curl <span class="nt">-O</span> https://raw.githubusercontent.com/opensearch-project/documentation-website/2.5/assets/examples/ecommerce.json
+
+ <span class="c"># Using wget:</span>
+ wget https://raw.githubusercontent.com/opensearch-project/documentation-website/2.5/assets/examples/ecommerce.json
+</code></pre></div>    </div>
+  </li>
+  <li>Define the field mappings with the mapping file.
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> curl <span class="nt">-H</span> <span class="s2">"Content-Type: application/x-ndjson"</span> <span class="nt">-X</span> PUT <span class="s2">"https://localhost:9200/ecommerce"</span> <span class="nt">-ku</span> admin:admin <span class="nt">--data-binary</span> <span class="s2">"@ecommerce-field_mappings.json"</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Upload the index to the bulk API.
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> curl <span class="nt">-H</span> <span class="s2">"Content-Type: application/x-ndjson"</span> <span class="nt">-X</span> PUT <span class="s2">"https://localhost:9200/ecommerce/_bulk"</span> <span class="nt">-ku</span> admin:admin <span class="nt">--data-binary</span> <span class="s2">"@ecommerce.json"</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Query the data using the search API. The following command submits a query that will return documents where <code class="language-plaintext highlighter-rouge">customer_first_name</code> is <code class="language-plaintext highlighter-rouge">Sonya</code>.
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> curl <span class="nt">-H</span> <span class="s1">'Content-Type: application/json'</span> <span class="nt">-X</span> GET <span class="s2">"https://localhost:9200/ecommerce/_search?pretty=true"</span> <span class="nt">-ku</span> admin:admin <span class="nt">-d</span><span class="s1">' {"query":{"match":{"customer_first_name":"Sonya"}}}'</span>
+</code></pre></div>    </div>
+    <p>Queries submitted to the OpenSearch REST API will generally return a flat JSON by default. For a human readable response body, use the query parameter <code class="language-plaintext highlighter-rouge">pretty=true</code>. For more information about <code class="language-plaintext highlighter-rouge">pretty</code> and other useful query parameters, see <a href="http://localhost:4000/docs/latest/opensearch/common-parameters/">Common REST parameters</a>.</p>
+  </li>
+  <li>Access OpenSearch Dashboards by opening <code class="language-plaintext highlighter-rouge">http://localhost:5601/</code> in a web browser on the same host that is running your OpenSearch cluster. The default username is <code class="language-plaintext highlighter-rouge">admin</code> and the default password is <code class="language-plaintext highlighter-rouge">admin</code>.</li>
+  <li>On the top menu bar, go to <strong>Management &gt; Dev Tools</strong>.</li>
+  <li>In the left pane of the console, enter the following:
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w"> </span><span class="err">GET</span><span class="w"> </span><span class="err">ecommerce/_search</span><span class="w">
+ </span><span class="p">{</span><span class="w">
+     </span><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+         </span><span class="nl">"match"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+             </span><span class="nl">"customer_first_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sonya"</span><span class="w">
+         </span><span class="p">}</span><span class="w">
+     </span><span class="p">}</span><span class="w">
+ </span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+  <li>Choose the triangle icon at the top right of the request to submit the query. You can also submit the request by pressing <code class="language-plaintext highlighter-rouge">Ctrl+Enter</code> (or <code class="language-plaintext highlighter-rouge">Cmd+Enter</code> for Mac users). To learn more about using the OpenSearch Dashboards console for submitting queries, see <a href="http://localhost:4000/docs/latest/dashboards/run-queries/">Running queries in the console</a>.</li>
+</ol>
+
+<h2 id="next-steps">Next steps</h2>
+
+<p>You successfully deployed your own OpenSearch cluster with OpenSearch Dashboards and added some sample data. Now you’re ready to learn about configuration and functionality in more detail. Here are a few recommendations on where to begin:</p>
+<ul>
+  <li><a href="http://localhost:4000/docs/latest/security/index/">About the security plugin</a></li>
+  <li><a href="http://localhost:4000/docs/latest/install-and-configure/configuration/">OpenSearch configuration</a></li>
+  <li><a href="http://localhost:4000/docs/latest/opensearch/install/plugins/">OpenSearch plugin installation</a></li>
+  <li><a href="http://localhost:4000/docs/latest/dashboards/index/">Getting started with OpenSearch Dashboards</a></li>
+  <li><a href="http://localhost:4000/docs/latest/tools/index/">OpenSearch tools</a></li>
+  <li><a href="http://localhost:4000/docs/latest/api-reference/index-apis/index/">Index APIs</a></li>
+</ul>
+
+<h2 id="common-issues">Common issues</h2>
+
+<p>Review these common issues and suggested solutions if your containers fail to start or exit unexpectedly.</p>
+
+<h3 id="docker-commands-require-elevated-permissions">Docker commands require elevated permissions</h3>
+
+<p>Eliminate the need for running your Docker commands with <code class="language-plaintext highlighter-rouge">sudo</code> by adding your user to the <code class="language-plaintext highlighter-rouge">docker</code> user group. See Docker’s <a href="https://docs.docker.com/engine/install/linux-postinstall/">Post-installation steps for Linux</a> for more information.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>usermod <span class="nt">-aG</span> docker <span class="nv">$USER</span>
+</code></pre></div></div>
+
+<h3 id="error-message--bash-docker-compose-command-not-found">Error message: “-bash: docker-compose: command not found”</h3>
+
+<p>If you installed Docker Desktop, then Docker Compose is already installed on your machine. Try <code class="language-plaintext highlighter-rouge">docker compose</code> (without the hyphen) instead of <code class="language-plaintext highlighter-rouge">docker-compose</code>. See <a href="https://docs.docker.com/get-started/08_using_compose/">Use Docker Compose</a>.</p>
+
+<h3 id="error-message-docker-compose-is-not-a-docker-command">Error message: “docker: ‘compose’ is not a docker command.”</h3>
+
+<p>If you installed Docker Engine, then you must install Docker Compose separately, and you will use the command <code class="language-plaintext highlighter-rouge">docker-compose</code> (with a hyphen). See <a href="https://github.com/docker/compose">Docker Compose</a>.</p>
+
+<h3 id="error-message-max-virtual-memory-areas-vmmax_map_count-65530-is-too-low">Error message: “max virtual memory areas vm.max_map_count [65530] is too low”</h3>
+
+<p>OpenSearch will fail to start if your host’s <code class="language-plaintext highlighter-rouge">vm.max_map_count</code> is too low. Review the <a href="http://localhost:4000/docs/latest/opensearch/install/important-settings/">important system settings</a> if you see the following errors in the service log, and set <code class="language-plaintext highlighter-rouge">vm.max_map_count</code> appropriately.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>opensearch-node1         | ERROR: <span class="o">[</span>1] bootstrap checks failed
+opensearch-node1         | <span class="o">[</span>1]: max virtual memory areas vm.max_map_count <span class="o">[</span>65530] is too low, increase to at least <span class="o">[</span>262144]
+opensearch-node1         | ERROR: OpenSearch did not <span class="nb">exit </span>normally - check the logs at /usr/share/opensearch/logs/opensearch-cluster.log
+</code></pre></div></div>
+:ET

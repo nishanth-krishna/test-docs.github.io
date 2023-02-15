@@ -1,0 +1,216 @@
+I"Y5<h1 id="ism-error-prevention-resolutions">ISM error prevention resolutions</h1>
+
+<p>Resolutions of errors for each validation rule action are listed in the following sections.</p>
+
+<hr />
+
+<h4 id="table-of-contents">Table of contents</h4>
+<ol id="markdown-toc">
+  <li><a href="#the-index-is-not-the-write-index" id="markdown-toc-the-index-is-not-the-write-index">The index is not the write index</a></li>
+  <li><a href="#the-index-does-not-have-an-alias" id="markdown-toc-the-index-does-not-have-an-alias">The index does not have an alias</a></li>
+  <li><a href="#skipping-rollover-action-is-true" id="markdown-toc-skipping-rollover-action-is-true">Skipping rollover action is true</a></li>
+  <li><a href="#this-index-has-already-been-rolled-over-successfully" id="markdown-toc-this-index-has-already-been-rolled-over-successfully">This index has already been rolled over successfully</a></li>
+  <li><a href="#the-rollover-policy-misses-rollover_alias-index-setting" id="markdown-toc-the-rollover-policy-misses-rollover_alias-index-setting">The rollover policy misses rollover_alias index setting</a></li>
+  <li><a href="#data-too-large-and-exceeding-the-threshold" id="markdown-toc-data-too-large-and-exceeding-the-threshold">Data too large and exceeding the threshold</a></li>
+  <li><a href="#maximum-shards-exceeded" id="markdown-toc-maximum-shards-exceeded">Maximum shards exceeded</a></li>
+  <li><a href="#the-index-is-a-write-index-for-some-data-stream" id="markdown-toc-the-index-is-a-write-index-for-some-data-stream">The index is a write index for some data stream</a></li>
+  <li><a href="#the-index-is-blocked" id="markdown-toc-the-index-is-blocked">The index is blocked</a></li>
+</ol>
+
+<hr />
+
+<h2 id="the-index-is-not-the-write-index">The index is not the write index</h2>
+
+<p>To confirm that the index is a write index, run the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET &lt;index&gt;/_alias?pretty
+</code></pre></div></div>
+
+<p>If the response does not contain <code class="language-plaintext highlighter-rouge">"is_write_index"</code> : true, the index is not a write index. The following example confirms that the index is a write index:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"&lt;index&gt;"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"aliases"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"&lt;index_alias&gt;"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> 
+        </span><span class="nl">"is_write_index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>To set the index as a write index, run the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT &lt;index&gt;
+<span class="o">{</span>
+  <span class="s2">"aliases"</span>: <span class="o">{</span>
+    <span class="s2">"&lt;index_alias&gt;"</span> : <span class="o">{</span>
+        <span class="s2">"is_write_index"</span> : <span class="nb">true</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="the-index-does-not-have-an-alias">The index does not have an alias</h2>
+
+<p>If the index does not have an alias, you can add one by running the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>POST _aliases
+<span class="o">{</span>
+  <span class="s2">"actions"</span>: <span class="o">[</span>
+    <span class="o">{</span>
+      <span class="s2">"add"</span>: <span class="o">{</span>
+        <span class="s2">"index"</span>: <span class="s2">"&lt;target_index&gt;"</span>,
+        <span class="s2">"alias"</span>: <span class="s2">"&lt;index_alias&gt;"</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">]</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="skipping-rollover-action-is-true">Skipping rollover action is true</h2>
+
+<p>In the event that skipping a rollover action occurs, run the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> GET &lt;target_index&gt;/_settings?pretty
+</code></pre></div></div>
+
+<p>If you receive the response in the first example, you can reset it by running the request in the second example:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"index"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"opendistro.index_state_management.rollover_skip"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT &lt;target_index&gt;/_settings
+<span class="o">{</span>
+    <span class="s2">"index"</span>: <span class="o">{</span>
+      <span class="s2">"index_state_management.rollover_skip"</span>: <span class="nb">false</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="this-index-has-already-been-rolled-over-successfully">This index has already been rolled over successfully</h2>
+
+<p>Remove the <a href="http://localhost:4000/docs/latest/im-plugin/ism/api/#remove-policy-from-index">rollover policy from the index</a> to prevent this error from reoccurring.</p>
+
+<h2 id="the-rollover-policy-misses-rollover_alias-index-setting">The rollover policy misses rollover_alias index setting</h2>
+
+<p>Add a <code class="language-plaintext highlighter-rouge">rollover_alias</code> index setting to the rollover policy to resolve this issue. Run the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT _index_template/ism_rollover
+<span class="o">{</span>
+  <span class="s2">"index_patterns"</span>: <span class="o">[</span><span class="s2">"&lt;index_patterns_in_rollover_policy&gt;"</span><span class="o">]</span>,
+  <span class="s2">"template"</span>: <span class="o">{</span>
+   <span class="s2">"settings"</span>: <span class="o">{</span>
+    <span class="s2">"plugins.index_state_management.rollover_alias"</span>: <span class="s2">"&lt;rollover_alias&gt;"</span>
+   <span class="o">}</span>
+ <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="data-too-large-and-exceeding-the-threshold">Data too large and exceeding the threshold</h2>
+
+<p>Check the <a href="http://localhost:4000/docs/latest/api-reference/nodes-apis/nodes-info/">JVM information</a> and increase the heap memory.</p>
+
+<h2 id="maximum-shards-exceeded">Maximum shards exceeded</h2>
+
+<p>The shard limit per node, or per index, causes this issue to occur. Check whether there is a <code class="language-plaintext highlighter-rouge">total_shards_per_node</code> limit by running the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET /_cluster/settings
+</code></pre></div></div>
+
+<p>If the response contains <code class="language-plaintext highlighter-rouge">total_shards_per_node</code>, increase its value temporarily by running the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT _cluster/settings
+<span class="o">{</span>
+   <span class="s2">"transient"</span>:<span class="o">{</span>
+      <span class="s2">"cluster.routing.allocation.total_shards_per_node"</span>:100
+   <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>To check whether there is a shard limit for an index, run the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET &lt;index&gt;/_settings/index.routing-
+</code></pre></div></div>
+
+<p>If the response contains the setting in the first example, increase its value or set it to <code class="language-plaintext highlighter-rouge">-1</code> for unlimited shards, as shown in the second example:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"routing"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"allocation"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"total_shards_per_node"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"10"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT &lt;index&gt;/_settings
+<span class="o">{</span><span class="s2">"index.routing.allocation.total_shards_per_node"</span>:-1<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="the-index-is-a-write-index-for-some-data-stream">The index is a write index for some data stream</h2>
+
+<p>If you still want to delete the index, check your <a href="http://localhost:4000/docs/latest/opensearch/data-streams/">data stream</a> settings and change the write index.</p>
+
+<h2 id="the-index-is-blocked">The index is blocked</h2>
+
+<p>Generally, the index is blocked because disk usage has exceeded the flood-stage watermark and the index has a <code class="language-plaintext highlighter-rouge">read-only-allow-delete</code> block. To resolve this issue, you can:</p>
+
+<ol>
+  <li>Remove the <code class="language-plaintext highlighter-rouge">-index.blocks.read_only_allow_delete-</code> parameter.</li>
+  <li>Temporarily increase the disk watermarks.</li>
+  <li>Temporarily disable the disk allocation threshold.</li>
+</ol>
+
+<p>To prevent the issue from reoccurring, it is better to reduce the usage of the disk by increasing disk space, adding new nodes, or removing data or indexes that are no longer needed.</p>
+
+<p>Remove <code class="language-plaintext highlighter-rouge">-index.blocks.read_only_allow_delete-</code> by running the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT &lt;index&gt;/_settings
+<span class="o">{</span>
+    <span class="s2">"index.blocks.read_only_allow_delete"</span>: null
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Increase the low disk watermarks by running the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT _cluster/settings
+<span class="o">{</span>
+    <span class="s2">"transient"</span>: <span class="o">{</span>
+        <span class="s2">"cluster"</span>: <span class="o">{</span>
+            <span class="s2">"routing"</span>: <span class="o">{</span>
+                <span class="s2">"allocation"</span>: <span class="o">{</span>
+                    <span class="s2">"disk"</span>: <span class="o">{</span>
+                        <span class="s2">"watermark"</span>: <span class="o">{</span>
+                            <span class="s2">"low"</span>: <span class="s2">"25.0gb"</span>
+                        <span class="o">}</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Disable the disk allocation threshold by running the following request:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT _cluster/settings
+<span class="o">{</span>
+    <span class="s2">"transient"</span>: <span class="o">{</span>
+        <span class="s2">"cluster"</span>: <span class="o">{</span>
+            <span class="s2">"routing"</span>: <span class="o">{</span>
+                <span class="s2">"allocation"</span>: <span class="o">{</span>
+                    <span class="s2">"disk"</span>: <span class="o">{</span>
+                        <span class="s2">"threshold_enabled"</span> : <span class="nb">false</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+:ET

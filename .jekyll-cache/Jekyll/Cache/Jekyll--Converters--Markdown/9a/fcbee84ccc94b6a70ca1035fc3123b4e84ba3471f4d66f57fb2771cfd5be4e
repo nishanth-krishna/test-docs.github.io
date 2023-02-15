@@ -1,0 +1,1425 @@
+I"��<h1 id="policies">Policies</h1>
+
+<p>Policies are JSON documents that define the following:</p>
+
+<ul>
+  <li>The <em>states</em> that an index can be in, including the default state for new indexes. For example, you might name your states “hot,” “warm,” “delete,” and so on. For more information, see <a href="#states">States</a>.</li>
+  <li>Any <em>actions</em> that you want the plugin to take when an index enters a state, such as performing a rollover. For more information, see <a href="#actions">Actions</a>.</li>
+  <li>The conditions that must be met for an index to move into a new state, known as <em>transitions</em>. For example, if an index is more than eight weeks old, you might want to move it to the “delete” state. For more information, see <a href="#transitions">Transitions</a>.</li>
+</ul>
+
+<p>In other words, a policy defines the <em>states</em> that an index can be in, the <em>actions</em> to perform when in a state, and the conditions that must be met to <em>transition</em> between states.</p>
+
+<p>You have complete flexibility in the way you can design your policies. You can create any state, transition to any other state, and specify any number of actions in each state.</p>
+
+<p>This table lists the relevant fields of a policy.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Field</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+      <th>Read Only</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">policy_id</code></td>
+      <td style="text-align: left">The name of the policy.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">description</code></td>
+      <td style="text-align: left">A human-readable description of the policy.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">ism_template</code></td>
+      <td style="text-align: left">Specify an ISM template pattern that matches the index to apply the policy.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">nested list of objects</code></td>
+      <td style="text-align: left">No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">last_updated_time</code></td>
+      <td style="text-align: left">The time the policy was last updated.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">timestamp</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">error_notification</code></td>
+      <td style="text-align: left">The destination and message template for error notifications. The destination could be Amazon Chime, Slack, or a webhook URL.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">object</code></td>
+      <td style="text-align: left">No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">default_state</code></td>
+      <td style="text-align: left">The default starting state for each index that uses this policy.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">states</code></td>
+      <td style="text-align: left">The states that you define in the policy.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">nested list of objects</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>No</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h4 id="table-of-contents">Table of contents</h4>
+<ol id="markdown-toc">
+  <li><a href="#states" id="markdown-toc-states">States</a></li>
+  <li><a href="#actions" id="markdown-toc-actions">Actions</a></li>
+  <li><a href="#ism-supported-operations" id="markdown-toc-ism-supported-operations">ISM supported operations</a>    <ol>
+      <li><a href="#force_merge" id="markdown-toc-force_merge">force_merge</a></li>
+      <li><a href="#read_only" id="markdown-toc-read_only">read_only</a></li>
+      <li><a href="#read_write" id="markdown-toc-read_write">read_write</a></li>
+      <li><a href="#replica_count" id="markdown-toc-replica_count">replica_count</a></li>
+      <li><a href="#shrink" id="markdown-toc-shrink">shrink</a></li>
+      <li><a href="#close" id="markdown-toc-close">close</a></li>
+      <li><a href="#open" id="markdown-toc-open">open</a></li>
+      <li><a href="#delete" id="markdown-toc-delete">delete</a></li>
+      <li><a href="#rollover" id="markdown-toc-rollover">rollover</a></li>
+      <li><a href="#notification" id="markdown-toc-notification">notification</a></li>
+      <li><a href="#snapshot" id="markdown-toc-snapshot">snapshot</a></li>
+      <li><a href="#index_priority" id="markdown-toc-index_priority">index_priority</a></li>
+      <li><a href="#allocation" id="markdown-toc-allocation">allocation</a></li>
+      <li><a href="#rollup" id="markdown-toc-rollup">rollup</a></li>
+    </ol>
+  </li>
+  <li><a href="#transitions" id="markdown-toc-transitions">Transitions</a></li>
+  <li><a href="#error-notifications" id="markdown-toc-error-notifications">Error notifications</a></li>
+  <li><a href="#sample-policy-with-ism-template-for-auto-rollover" id="markdown-toc-sample-policy-with-ism-template-for-auto-rollover">Sample policy with ISM template for auto rollover</a></li>
+  <li><a href="#example-policy-with-ism-templates-for-the-alias-action" id="markdown-toc-example-policy-with-ism-templates-for-the-alias-action">Example policy with ISM templates for the alias action</a></li>
+  <li><a href="#example-policy" id="markdown-toc-example-policy">Example policy</a></li>
+</ol>
+
+<hr />
+
+<h2 id="states">States</h2>
+
+<p>A state is the description of the status that the managed index is currently in. A managed index can be in only one state at a time. Each state has associated actions that are executed sequentially on entering a state and transitions that are checked after all the actions have been completed.</p>
+
+<p>This table lists the parameters that you can define for a state.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Field</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">name</code></td>
+      <td style="text-align: left">The name of the state.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">actions</code></td>
+      <td style="text-align: left">The actions to execute after entering a state. For more information, see <a href="#actions">Actions</a>.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">nested list of objects</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">transitions</code></td>
+      <td style="text-align: left">The next states and the conditions required to transition to those states. If no transitions exist, the policy assumes that it’s complete and can now stop managing the index. For more information, see <a href="#transitions">Transitions</a>.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">nested list of objects</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="actions">Actions</h2>
+
+<p>Actions are the steps that the policy sequentially executes on entering a specific state.</p>
+
+<p>ISM executes actions in the order in which they are defined. For example, if you define actions [A,B,C,D], ISM executes action A, and then goes into a sleep period based on the cluster setting <code class="language-plaintext highlighter-rouge">plugins.index_state_management.job_interval</code>. Once the sleep period ends, ISM continues to execute the remaining actions. However, if ISM cannot successfully execute action A, the operation ends, and actions B, C, and D do not get executed.</p>
+
+<p>Optionally, you can define an action’s timeout period, which, if exceeded, forcibly fails the action. For example, if timeout is set to <code class="language-plaintext highlighter-rouge">1d</code>, and ISM has not completed the action within one day, even after retries, the action fails.</p>
+
+<p>This table lists the parameters that you can define for an action.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">timeout</code></td>
+      <td style="text-align: left">The timeout period for the action. Accepts time units for minutes, hours, and days.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">time unit</code></td>
+      <td style="text-align: left">No</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">retry</code></td>
+      <td style="text-align: left">The retry configuration for the action.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">object</code></td>
+      <td style="text-align: left">No</td>
+      <td>Specific to action</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The <code class="language-plaintext highlighter-rouge">retry</code> operation has the following parameters:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">count</code></td>
+      <td style="text-align: left">The number of retry counts.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">number</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">backoff</code></td>
+      <td style="text-align: left">The backoff policy type to use when retrying. Valid values are Exponential, Constant, and Linear.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">No</td>
+      <td>Exponential</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">delay</code></td>
+      <td style="text-align: left">The time to wait between retries. Accepts time units for minutes, hours, and days.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">time unit</code></td>
+      <td style="text-align: left">No</td>
+      <td>1 minute</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The following example action has a timeout period of one hour. The policy retries this action three times with an exponential backoff policy, with a delay of 10 minutes between each retry:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"timeout"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1h"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"retry"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"count"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"backoff"</span><span class="p">:</span><span class="w"> </span><span class="s2">"exponential"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"delay"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10m"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>For a list of available unit types, see <a href="http://localhost:4000/docs/latest/opensearch/units/">Supported units</a>.</p>
+
+<h2 id="ism-supported-operations">ISM supported operations</h2>
+
+<p>ISM supports the following operations:</p>
+
+<ul>
+  <li><a href="#force_merge">force_merge</a></li>
+  <li><a href="#read_only">read_only</a></li>
+  <li><a href="#read_write">read_write</a></li>
+  <li><a href="#replica_count">replica_count</a></li>
+  <li><a href="#shrink">shrink</a></li>
+  <li><a href="#close">close</a></li>
+  <li><a href="#open">open</a></li>
+  <li><a href="#delete">delete</a></li>
+  <li><a href="#rollover">rollover</a></li>
+  <li><a href="#notification">notification</a></li>
+  <li><a href="#snapshot">snapshot</a></li>
+  <li><a href="#index_priority">index_priority</a></li>
+  <li><a href="#allocation">allocation</a></li>
+  <li><a href="#rollup">rollup</a></li>
+</ul>
+
+<h3 id="force_merge">force_merge</h3>
+
+<p>Reduces the number of Lucene segments by merging the segments of individual shards. This operation attempts to set the index to a <code class="language-plaintext highlighter-rouge">read-only</code> state before starting the merging process.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">max_num_segments</code></td>
+      <td style="text-align: left">The number of segments to reduce the shard to.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">number</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"force_merge"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"max_num_segments"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="read_only">read_only</h3>
+
+<p>Sets a managed index to be read only.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"read_only"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="read_write">read_write</h3>
+
+<p>Sets a managed index to be writeable.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"read_write"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="replica_count">replica_count</h3>
+
+<p>Sets the number of replicas to assign to an index.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">number_of_replicas</code></td>
+      <td style="text-align: left">Defines the number of replicas to assign to an index.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">number</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"replica_count"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"number_of_replicas"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>For information about setting replicas, see <a href="http://localhost:4000/docs/latest/opensearch#primary-and-replica-shards">Primary and replica shards</a>.</p>
+
+<h3 id="shrink">shrink</h3>
+
+<p>Allows you to reduce the number of primary shards in your indexes. With this action, you can specify:</p>
+
+<ul>
+  <li>The number of primary shards that the target index should contain.</li>
+  <li>A max shard size for the primary shards in the target index.</li>
+  <li>Specify a percentage to shrink the number of primary shards in the target index.</li>
+</ul>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"shrink"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"num_new_shards"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"target_index_name_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"_shrunken"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"aliases"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"my-alias"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"force_unsafe"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Example</th>
+      <th>Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">num_new_shards</code></td>
+      <td style="text-align: left">The maximum number of primary shards in the shrunken index.</td>
+      <td style="text-align: left">integer</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">5</code></td>
+      <td>Yes, however it cannot be used with <code class="language-plaintext highlighter-rouge">max_shard_size</code> or <code class="language-plaintext highlighter-rouge">percentage_of_source_shards</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">max_shard_size</code></td>
+      <td style="text-align: left">The maximum size in bytes of a shard for the target index.</td>
+      <td style="text-align: left">keyword</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">5gb</code></td>
+      <td>Yes, however it cannot be used with <code class="language-plaintext highlighter-rouge">num_new_shards</code> or <code class="language-plaintext highlighter-rouge">percentage_of_source_shards</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">percentage_of_source_shards</code></td>
+      <td style="text-align: left">Percentage of the number of original primary shards to shrink. This parameter indicates the minimum percentage to use when shrinking the number of primary shards. Must be between 0.0 and 1.0, exclusive.</td>
+      <td style="text-align: left">Percentage</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">0.5</code></td>
+      <td>Yes, however it cannot be used with <code class="language-plaintext highlighter-rouge">max_shard_size</code> or <code class="language-plaintext highlighter-rouge">num_new_shards</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">target_index_name_template</code></td>
+      <td style="text-align: left">The name of the shrunken index. Accepts strings and the Mustache variables <code class="language-plaintext highlighter-rouge">and</code>.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code> or Mustache template</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">{"source": "_shrunken"}</code></td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">aliases</code></td>
+      <td style="text-align: left">Aliases to add to the new index.</td>
+      <td style="text-align: left">object</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">myalias</code></td>
+      <td>No, but must be an array of alias objects</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">force_unsafe</code></td>
+      <td style="text-align: left">If true, executes the shrink action even if there are no replicas.</td>
+      <td style="text-align: left">boolean</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">false</code></td>
+      <td>No</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>If you want to add <code class="language-plaintext highlighter-rouge">aliases</code> to the action, the parameter must include an array of <a href="http://localhost:4000/docs/latest/api-reference/alias/">alias objects</a>. For example,</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"aliases"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"my-alias"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"my-second-alias"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"is_write_index"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"filter"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"multi_match"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="s2">"QUEEN"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"fields"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"speaker"</span><span class="p">,</span><span class="w"> </span><span class="s2">"text_entry"</span><span class="p">]</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"index_routing"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"search_routing"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="close">close</h3>
+
+<p>Closes the managed index.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"close"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Closed indexes remain on disk, but consume no CPU or memory. You can’t read from, write to, or search closed indexes.</p>
+
+<p>Closing an index is a good option if you need to retain data for longer than you need to actively search it and have sufficient disk space on your data nodes. If you need to search the data again, reopening a closed index is simpler than restoring an index from a snapshot.</p>
+
+<h3 id="open">open</h3>
+
+<p>Opens a managed index.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"open"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="delete">delete</h3>
+
+<p>Deletes a managed index.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"delete"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="rollover">rollover</h3>
+
+<p>Rolls an alias over to a new index when the managed index meets one of the rollover conditions.</p>
+
+<p><strong>Important</strong>: ISM checks the conditions for operations on <strong>every execution of the policy</strong> based on the <strong>set interval</strong>, <em>not</em> continuously. The rollover will be performed if the value <strong>has reached</strong> or <em>exceeded</em> the configured limit <strong>when the check is performed</strong>. For example with <code class="language-plaintext highlighter-rouge">min_size</code> configured to a value of 100GiB, ISM might check the index at 99 GiB and not perform the rollover. However, if the index has grown past the limit (e.g. 105GiB) by the next check, the operation is performed.</p>
+
+<p>The index format must match the pattern: <code class="language-plaintext highlighter-rouge">^.*-\d+$</code>. For example, <code class="language-plaintext highlighter-rouge">(logs-000001)</code>.
+Set <code class="language-plaintext highlighter-rouge">index.plugins.index_state_management.rollover_alias</code> as the alias to rollover.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Example</th>
+      <th>Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">min_size</code></td>
+      <td style="text-align: left">The minimum size of the total primary shard storage (not counting replicas) required to roll over the index. For example, if you set <code class="language-plaintext highlighter-rouge">min_size</code> to 100 GiB and your index has 5 primary shards and 5 replica shards of 20 GiB each, the total size of all primary shards is 100 GiB, so the rollover occurs. See <strong>Important</strong> note above.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">20gb</code> or <code class="language-plaintext highlighter-rouge">5mb</code></td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">min_primary_shard_size</code></td>
+      <td style="text-align: left">The minimum storage size of a <strong>single primary shard</strong> required to roll over the index. For example, if you set <code class="language-plaintext highlighter-rouge">min_primary_shard_size</code> to 30 GiB and <strong>one of</strong> the primary shards in the index has a size greater than the condition, the rollover occurs. See <strong>Important</strong> note above.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">20gb</code> or <code class="language-plaintext highlighter-rouge">5mb</code></td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">min_doc_count</code></td>
+      <td style="text-align: left">The minimum number of documents required to roll over the index. See <strong>Important</strong> note above.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">number</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">2000000</code></td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">min_index_age</code></td>
+      <td style="text-align: left">The minimum age required to roll over the index. Index age is the time between its creation and the present. Supported units are <code class="language-plaintext highlighter-rouge">d</code> (days), <code class="language-plaintext highlighter-rouge">h</code> (hours), <code class="language-plaintext highlighter-rouge">m</code> (minutes), <code class="language-plaintext highlighter-rouge">s</code> (seconds), <code class="language-plaintext highlighter-rouge">ms</code> (milliseconds), and <code class="language-plaintext highlighter-rouge">micros</code> (microseconds). See <strong>Important</strong> note above.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">5d</code> or <code class="language-plaintext highlighter-rouge">7h</code></td>
+      <td>No</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"min_size"</span><span class="p">:</span><span class="w"> </span><span class="s2">"50gb"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"min_primary_shard_size"</span><span class="p">:</span><span class="w"> </span><span class="s2">"30gb"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"min_doc_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">100000000</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"min_index_age"</span><span class="p">:</span><span class="w"> </span><span class="s2">"30d"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="notification">notification</h3>
+
+<p>Sends you a notification.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">destination</code></td>
+      <td style="text-align: left">The destination URL.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">Slack, Amazon Chime, or webhook URL</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">message_template</code></td>
+      <td style="text-align: left">The text of the message. You can add variables to your messages using <a href="https://mustache.github.io/mustache.5.html">Mustache templates</a>.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">object</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The destination system <strong>must</strong> return a response otherwise the notification operation throws an error.</p>
+
+<h4 id="example-1-chime-notification">Example 1: Chime notification</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"notification"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"destination"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"chime"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;url&gt;"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"message_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"the index is {{ctx.index}}"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="example-2-custom-webhook-notification">Example 2: Custom webhook notification</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"notification"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"destination"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"custom_webhook"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://&lt;your_webhook&gt;"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"message_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"the index is {{ctx.index}}"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="example-3-slack-notification">Example 3: Slack notification</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"notification"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"destination"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"slack"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://hooks.slack.com/services/xxx/xxxxxx"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"message_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"the index is {{ctx.index}}"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You can use <code class="language-plaintext highlighter-rouge">ctx</code> variables in your message to represent a number of policy parameters based on the past executions of your policy. For example, if your policy has a rollover action, you can use <code class="language-plaintext highlighter-rouge">{{ctx.action.name}}</code> in your message to represent the name of the rollover.</p>
+
+<p>The following <code class="language-plaintext highlighter-rouge">ctx</code> variable options are available for every policy:</p>
+
+<h4 id="guaranteed-variables">Guaranteed variables</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">index</code></td>
+      <td style="text-align: left">The name of the index.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">index_uuid</code></td>
+      <td style="text-align: left">The uuid of the index.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">policy_id</code></td>
+      <td style="text-align: left">The name of the policy.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="snapshot">snapshot</h3>
+
+<p>Back up your cluster’s indexes and state. For more information about snapshots, see <a href="http://localhost:4000/docs/latest/opensearch/snapshots/snapshot-restore">Take and restore snapshots</a>.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">snapshot</code> operation has the following parameters:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">repository</code></td>
+      <td style="text-align: left">The repository name that you register through the native snapshot API operations.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">snapshot</code></td>
+      <td style="text-align: left">The name of the snapshot. Accepts strings and the Mustache variables <code class="language-plaintext highlighter-rouge">and</code>. If the Mustache variables are invalid, then the snapshot name defaults to the index’s name.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code> or Mustache template</td>
+      <td style="text-align: left">Yes</td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"snapshot"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"repository"</span><span class="p">:</span><span class="w"> </span><span class="s2">"my_backup"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"snapshot"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="index_priority">index_priority</h3>
+
+<p>Set the priority for the index in a specific state. Unallocated shards of indexes are recovered in the order of their priority, whenever possible. The indexes with higher priority values are recovered first followed by the indexes with lower priority values.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">index_priority</code> operation has the following parameter:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+      <th style="text-align: left">Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">priority</code></td>
+      <td style="text-align: left">The priority for the index as soon as it enters a state.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">number</code></td>
+      <td style="text-align: left">Yes</td>
+      <td style="text-align: left">1</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"index_priority"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"priority"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="allocation">allocation</h3>
+
+<p>Allocate the index to a node with a specific attribute set <a href="http://localhost:4000/docs/latest/opensearch/cluster/#advanced-step-7-set-up-a-hot-warm-architecture">like this</a>.
+For example, setting <code class="language-plaintext highlighter-rouge">require</code> to <code class="language-plaintext highlighter-rouge">warm</code> moves your data only to “warm” nodes.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">allocation</code> operation has the following parameters:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">require</code></td>
+      <td style="text-align: left">Allocate the index to a node with a specified attribute.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">include</code></td>
+      <td style="text-align: left">Allocate the index to a node with any of the specified attributes.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">exclude</code></td>
+      <td style="text-align: left">Don’t allocate the index to a node with any of the specified attributes.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">wait_for</code></td>
+      <td style="text-align: left">Wait for the policy to execute before allocating the index to a node with a specified attribute.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"allocation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"require"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"temp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warm"</span><span class="w"> </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="rollup">rollup</h3>
+
+<p><a href="http://localhost:4000/docs/latest/im-plugin/index-rollups/index/">Index rollup</a> lets you periodically reduce data granularity by rolling up old data into summarized indexes.</p>
+
+<p class="note">Rollup jobs can be continuous or non-continuous. A rollup job created using an ISM policy can only be non-continuous.</p>
+
+<h4 id="path-and-http-methods">Path and HTTP methods</h4>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT _plugins/_rollup/jobs/&lt;rollup_id&gt;
+GET _plugins/_rollup/jobs/&lt;rollup_id&gt;
+DELETE _plugins/_rollup/jobs/&lt;rollup_id&gt;
+POST _plugins/_rollup/jobs/&lt;rollup_id&gt;/_start
+POST _plugins/_rollup/jobs/&lt;rollup_id&gt;/_stop
+GET _plugins/_rollup/jobs/&lt;rollup_id&gt;/_explain
+</code></pre></div></div>
+
+<h4 id="sample-ism-rollup-policy">Sample ISM rollup policy</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sample rollup"</span><span class="w"> </span><span class="p">,</span><span class="w">
+        </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollup"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollup"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                    </span><span class="p">{</span><span class="w">
+                        </span><span class="nl">"rollup"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                            </span><span class="nl">"ism_rollup"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                                </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Creating rollup through ISM"</span><span class="p">,</span><span class="w">
+                                </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"target"</span><span class="p">,</span><span class="w">
+                                </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w">
+                                </span><span class="nl">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                                    </span><span class="p">{</span><span class="w">
+                                        </span><span class="nl">"date_histogram"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                                            </span><span class="nl">"fixed_interval"</span><span class="p">:</span><span class="w"> </span><span class="s2">"60m"</span><span class="p">,</span><span class="w">
+                                            </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order_date"</span><span class="p">,</span><span class="w">
+                                            </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order_date"</span><span class="p">,</span><span class="w">
+                                            </span><span class="nl">"timezone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"America/Los_Angeles"</span><span class="w">
+                                        </span><span class="p">}</span><span class="w">
+                                    </span><span class="p">},</span><span class="w">
+                                    </span><span class="p">{</span><span class="w">
+                                        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                                            </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="p">,</span><span class="w">
+                                            </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="w">
+                                        </span><span class="p">}</span><span class="w">
+                                    </span><span class="p">},</span><span class="w">
+                                    </span><span class="p">{</span><span class="w">
+                                        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                                            </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="p">,</span><span class="w">
+                                            </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="w">
+                                        </span><span class="p">}</span><span class="w">
+                                    </span><span class="p">}</span><span class="w">
+                                </span><span class="p">],</span><span class="w">
+                                </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                                    </span><span class="p">{</span><span class="w">
+                                        </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"taxless_total_price"</span><span class="p">,</span><span class="w">
+                                        </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                                            </span><span class="p">{</span><span class="w">
+                                                </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+                                            </span><span class="p">}</span><span class="w">
+                                        </span><span class="p">]</span><span class="w">
+                                    </span><span class="p">},</span><span class="w">
+                                    </span><span class="p">{</span><span class="w">
+                                        </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="p">,</span><span class="w">
+                                        </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                                            </span><span class="p">{</span><span class="w">
+                                                </span><span class="nl">"avg"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+                                            </span><span class="p">},</span><span class="w">
+                                            </span><span class="p">{</span><span class="w">
+                                                </span><span class="nl">"max"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+                                            </span><span class="p">}</span><span class="w">
+                                        </span><span class="p">]</span><span class="w">
+                                    </span><span class="p">}</span><span class="w">
+                                </span><span class="p">]</span><span class="w">
+                            </span><span class="p">}</span><span class="w">
+                        </span><span class="p">}</span><span class="w">
+                    </span><span class="p">}</span><span class="w">
+                </span><span class="p">],</span><span class="w">
+                </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="request-fields">Request fields</h4>
+
+<p>Request fields are required when creating an ISM policy. You can reference the <a href="http://localhost:4000/docs/latest/im-plugin/index-rollups/rollup-api/#create-or-update-an-index-rollup-job">Index rollups API</a> page for request field options.</p>
+
+<h4 id="adding-a-rollup-policy-in-dashboards">Adding a rollup policy in Dashboards</h4>
+
+<p>To add a rollup policy in Dashboards, follow the steps below.</p>
+
+<ul>
+  <li>Select the menu button on the top-left of the Dashboards user interface.</li>
+  <li>In the Dashboards menu, select <code class="language-plaintext highlighter-rouge">Index Management</code>.</li>
+  <li>On the next screen select <code class="language-plaintext highlighter-rouge">Rollup jobs</code>.</li>
+  <li>Select the <code class="language-plaintext highlighter-rouge">Create rollup</code> button.</li>
+  <li>Follow the steps in the <code class="language-plaintext highlighter-rouge">Create rollup job</code> wizard.</li>
+  <li>Add a name for the policy in the <code class="language-plaintext highlighter-rouge">Name</code> box.</li>
+  <li>You can reference the <a href="http://localhost:4000/docs/latest/im-plugin/index-rollups/rollup-api/#create-or-update-an-index-rollup-job">Index rollups API</a> page to configure the rollup policy.</li>
+  <li>Finally, select the <code class="language-plaintext highlighter-rouge">Create</code> button on the bottom-right of the Dashboards user interface.</li>
+</ul>
+
+<hr />
+
+<h2 id="transitions">Transitions</h2>
+
+<p>Transitions define the conditions that need to be met for a state to change. After all actions in the current state are completed, the policy starts checking the conditions for transitions.</p>
+
+<p>ISM evaluates transitions in the order in which they are defined. For example, if you define transitions: [A,B,C,D], ISM iterates through this list of transitions until it finds a transition that evaluates to <code class="language-plaintext highlighter-rouge">true</code>, it then stops and sets the next state to the one defined in that transition. On its next execution, ISM dismisses the rest of the transitions and starts in that new state.</p>
+
+<p>If you don’t specify any conditions in a transition and leave it empty, then it’s assumed to be the equivalent of always true. This means that the policy transitions the index to this state the moment it checks.</p>
+
+<p>This table lists the parameters you can define for transitions.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">state_name</code></td>
+      <td style="text-align: left">The name of the state to transition to if the conditions are met.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">conditions</code></td>
+      <td style="text-align: left">List the conditions for the transition.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">list</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The <code class="language-plaintext highlighter-rouge">conditions</code> object has the following parameters:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">min_index_age</code></td>
+      <td style="text-align: left">The minimum age of the index required to transition.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">min_rollover_age</code></td>
+      <td style="text-align: left">The minimum age required after a rollover has occurred to transition to the next state.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">min_doc_count</code></td>
+      <td style="text-align: left">The minimum document count of the index required to transition.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">number</code></td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">min_size</code></td>
+      <td style="text-align: left">The minimum size of the total primary shard storage (not counting replicas) required to transition. For example, if you set <code class="language-plaintext highlighter-rouge">min_size</code> to 100 GiB and your index has 5 primary shards and 5 replica shards of 20 GiB each, the total size of all primary shards is 100 GiB, so your index is transitioned to the next state.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">cron</code></td>
+      <td style="text-align: left">The <code class="language-plaintext highlighter-rouge">cron</code> job that triggers the transition if no other transition happens first.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">object</code></td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">cron.cron.expression</code></td>
+      <td style="text-align: left">The <code class="language-plaintext highlighter-rouge">cron</code> expression that triggers the transition.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">cron.cron.timezone</code></td>
+      <td style="text-align: left">The timezone that triggers the transition.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The following example transitions the index to a <code class="language-plaintext highlighter-rouge">cold</code> state after a period of 30 days:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cold"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"conditions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"min_index_age"</span><span class="p">:</span><span class="w"> </span><span class="s2">"30d"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>ISM checks the conditions on every execution of the policy based on the set interval.</p>
+
+<p>This example uses the <code class="language-plaintext highlighter-rouge">cron</code> condition to transition indexes every Saturday at 5:00 PT:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cold"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"conditions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"cron"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"cron"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"expression"</span><span class="p">:</span><span class="w"> </span><span class="s2">"* 17 * * SAT"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"timezone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"America/Los_Angeles"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Note that this condition does not execute at exactly 5:00 PM; the job still executes based off the <code class="language-plaintext highlighter-rouge">job_interval</code> setting. Due to this variance in start time and the amount of time that it can take for actions to complete prior to checking transition conditions, we recommend against overly narrow cron expressions. For example, don’t use <code class="language-plaintext highlighter-rouge">15 17 * * SAT</code> (5:15 PM on Saturday).</p>
+
+<p>A window of an hour, which this example uses, is generally sufficient, but you might increase it to 2–3 hours to avoid missing the window and having to wait a week for the transition to occur. Alternately, you could use a broader expression such as <code class="language-plaintext highlighter-rouge">* * * * SAT,SUN</code> to have the transition occur at any time during the weekend.</p>
+
+<p>For information on writing cron expressions, see <a href="http://localhost:4000/docs/latest/monitoring-plugins/alerting/cron/">Cron expression reference</a>.</p>
+
+<hr />
+
+<h2 id="error-notifications">Error notifications</h2>
+
+<p>The <code class="language-plaintext highlighter-rouge">error_notification</code> operation sends you a notification if your managed index fails.
+It notifies a single destination or <a href="http://localhost:4000/docs/latest/notifications-plugin/index">notification channel</a> with a custom message.</p>
+
+<p>Set up error notifications at the policy level:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hot warm delete workflow"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hot"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"error_notification"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Type</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">destination</code></td>
+      <td style="text-align: left">The destination URL.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">Slack, Amazon Chime, or webhook URL</code></td>
+      <td style="text-align: left">Yes if <code class="language-plaintext highlighter-rouge">channel</code> isn’t specified</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">channel</code></td>
+      <td style="text-align: left">A notification channel’s ID</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">string</code></td>
+      <td style="text-align: left">Yes if <code class="language-plaintext highlighter-rouge">destination</code> isn’t specified</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">message_template</code></td>
+      <td style="text-align: left">The text of the message. You can add variables to your messages using <a href="https://mustache.github.io/mustache.5.html">Mustache templates</a>.</td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">object</code></td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The destination system <strong>must</strong> return a response otherwise the <code class="language-plaintext highlighter-rouge">error_notification</code> operation throws an error.</p>
+
+<h4 id="example-1-chime-notification-1">Example 1: Chime notification</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"error_notification"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"destination"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"chime"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;url&gt;"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"message_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The index {{ctx.index}} failed during policy execution."</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="example-2-custom-webhook-notification-1">Example 2: Custom webhook notification</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"error_notification"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"destination"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"custom_webhook"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://&lt;your_webhook&gt;"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"message_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The index {{ctx.index}} failed during policy execution."</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="example-3-slack-notification-1">Example 3: Slack notification</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"error_notification"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"destination"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"slack"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://hooks.slack.com/services/xxx/xxxxxx"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"message_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The index {{ctx.index}} failed during policy execution."</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="example-4-using-a-notification-channel">Example 4: Using a notification channel</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"error_notification"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"channel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-channel-config-id"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"message_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The index {{ctx.index}} failed during policy execution."</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You can use the same options for <code class="language-plaintext highlighter-rouge">ctx</code> variables as the <a href="#notification">notification</a> operation.</p>
+
+<h2 id="sample-policy-with-ism-template-for-auto-rollover">Sample policy with ISM template for auto rollover</h2>
+
+<p>The following sample template policy is for a rollover use case.</p>
+
+<p>If you want to skip rollovers for an index, set <code class="language-plaintext highlighter-rouge">index.plugins.index_state_management.rollover_skip</code> to <code class="language-plaintext highlighter-rouge">true</code> in the settings of that index.</p>
+
+<ol>
+  <li>
+    <p>Create a policy with an <code class="language-plaintext highlighter-rouge">ism_template</code> field:</p>
+
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_ism/policies/rollover_policy</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Example rollover policy."</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_doc_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"ism_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"index_patterns"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"log*"</span><span class="p">],</span><span class="w">
+      </span><span class="nl">"priority"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+
+    <p>You need to specify the <code class="language-plaintext highlighter-rouge">index_patterns</code> field. If you don’t specify a value for <code class="language-plaintext highlighter-rouge">priority</code>, it defaults to 0.</p>
+  </li>
+  <li>
+    <p>Set up a template with the <code class="language-plaintext highlighter-rouge">rollover_alias</code> as <code class="language-plaintext highlighter-rouge">log</code> :</p>
+
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_index_template/ism_rollover</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"index_patterns"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"log*"</span><span class="p">],</span><span class="w">
+  </span><span class="nl">"template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"settings"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"plugins.index_state_management.rollover_alias"</span><span class="p">:</span><span class="w"> </span><span class="s2">"log"</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+ </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Create an index with the <code class="language-plaintext highlighter-rouge">log</code> alias:</p>
+
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">log</span><span class="mi">-000001</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"aliases"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"log"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"is_write_index"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Index a document to trigger the rollover condition:</p>
+
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">log/_doc</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dummy"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Verify if the policy is attached to the <code class="language-plaintext highlighter-rouge">log-000001</code> index:</p>
+
+    <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_ism/explain/log</span><span class="mi">-000001</span><span class="err">?pretty</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<h2 id="example-policy-with-ism-templates-for-the-alias-action">Example policy with ISM templates for the alias action</h2>
+
+<p>The following example policy is for an alias action use case.</p>
+
+<p>In the following example, the first job will trigger the rollover action, and a new index will be created. Next, another document is added to the two indexes. The new job will then cause the second index to point to the log alias, and the older index will be removed due to the alias action.</p>
+
+<p>First, create an ISM policy:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">/_plugins/_ism/policies/rollover_policy?pretty</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Example rollover policy."</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_doc_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w">
+            </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"alias"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"conditions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_doc_count"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"alias"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"alias"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"remove"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                      </span><span class="nl">"alias"</span><span class="p">:</span><span class="w"> </span><span class="s2">"log"</span><span class="w">
+                  </span><span class="p">}</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">]</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"ism_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"index_patterns"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"log*"</span><span class="p">],</span><span class="w">
+      </span><span class="nl">"priority"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Next, create an index template on which to enable the policy:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">/_index_template/ism_rollover?</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"index_patterns"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"log*"</span><span class="p">],</span><span class="w">
+  </span><span class="nl">"template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"settings"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"plugins.index_state_management.rollover_alias"</span><span class="p">:</span><span class="w"> </span><span class="s2">"log"</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+ </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p><label hidden="" class="copy-curl-label">copy</label></p>
+
+<p>Next, change the cluster settings to trigger jobs every minute:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">/_cluster/settings?pretty=</span><span class="kc">true</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"persistent"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"plugins.index_state_management.job_interval"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p><label hidden="" class="copy-curl-label">copy</label></p>
+
+<p>Next, create a new index:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">/log</span><span class="mi">-000001</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"aliases"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"log"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"is_write_index"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p><label hidden="" class="copy-curl-label">copy</label></p>
+
+<p>Finally, add a document to the index to trigger the job:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">/log</span><span class="mi">-000001</span><span class="err">/_doc</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dummy"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p><label hidden="" class="copy-curl-label">copy</label></p>
+
+<p>You can verify these steps using the Alias and Index API:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">/_cat/indices?pretty</span><span class="w">
+</span></code></pre></div></div>
+<p><label hidden="" class="copy-curl-label">copy</label></p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">/_cat/aliases?pretty</span><span class="w">
+</span></code></pre></div></div>
+<p><label hidden="" class="copy-curl-label">copy</label></p>
+
+<p class="warning">Note: The <code class="language-plaintext highlighter-rouge">index</code> and <code class="language-plaintext highlighter-rouge">remove_index</code> parameters are not allowed with alias action policies. Only the <code class="language-plaintext highlighter-rouge">add</code> and <code class="language-plaintext highlighter-rouge">remove</code> alias action parameters are allowed.</p>
+
+<h2 id="example-policy">Example policy</h2>
+
+<p>The following example policy implements a <code class="language-plaintext highlighter-rouge">hot</code>, <code class="language-plaintext highlighter-rouge">warm</code>, and <code class="language-plaintext highlighter-rouge">delete</code> workflow. You can use this policy as a template to prioritize resources to your indexes based on their levels of activity.</p>
+
+<p>In this case, an index is initially in a <code class="language-plaintext highlighter-rouge">hot</code> state. After a day, it changes to a <code class="language-plaintext highlighter-rouge">warm</code> state, where the number of replicas increases to 5 to improve the read performance.</p>
+
+<p>After 30 days, the policy moves this index into a <code class="language-plaintext highlighter-rouge">delete</code> state. The service sends a notification to a Chime room that the index is being deleted, and then permanently deletes it.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hot warm delete workflow"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hot"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hot"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_index_age"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1d"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"min_primary_shard_size"</span><span class="p">:</span><span class="w"> </span><span class="s2">"30gb"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warm"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warm"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"replica_count"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"number_of_replicas"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"conditions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"min_index_age"</span><span class="p">:</span><span class="w"> </span><span class="s2">"30d"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delete"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"notification"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"destination"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"chime"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;URL&gt;"</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">},</span><span class="w">
+              </span><span class="nl">"message_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The index {{ctx.index}} is being deleted"</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"delete"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"ism_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"index_patterns"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"log*"</span><span class="p">],</span><span class="w">
+      </span><span class="nl">"priority"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This diagram shows the <code class="language-plaintext highlighter-rouge">states</code>, <code class="language-plaintext highlighter-rouge">transitions</code>, and <code class="language-plaintext highlighter-rouge">actions</code> of the above policy as a finite-state machine. For more information about finite-state machines, see <a href="https://en.wikipedia.org/wiki/Finite-state_machine">Wikipedia</a>.</p>
+
+<p><img src="/docs/latest/images/ism.png" alt="Policy State Machine" /></p>
+:ET

@@ -1,0 +1,812 @@
+I"�t<h1 id="index-rollups">Index rollups</h1>
+
+<p>Time series data increases storage costs, strains cluster health, and slows down aggregations over time. Index rollup lets you periodically reduce data granularity by rolling up old data into summarized indices.</p>
+
+<p>You pick the fields that interest you and use index rollup to create a new index with only those fields aggregated into coarser time buckets. You can store months or years of historical data at a fraction of the cost with the same query performance.</p>
+
+<p>For example, say you collect CPU consumption data every five seconds and store it on a hot node. Instead of moving older data to a read-only warm node, you can roll up or compress this data with only the average CPU consumption per day or with a 10% decrease in its interval every week.</p>
+
+<p>You can use index rollup in three ways:</p>
+
+<ol>
+  <li>Use the index rollup API for an on-demand index rollup job that operates on an index that’s not being actively ingested such as a rolled-over index. For example, you can perform an index rollup operation to reduce data collected at a five minute interval to a weekly average for trend analysis.</li>
+  <li>Use the OpenSearch Dashboards UI to create an index rollup job that runs on a defined schedule. You can also set it up to roll up your indices as it’s being actively ingested. For example, you can continuously roll up Logstash indices from a five second interval to a one hour interval.</li>
+  <li>Specify the index rollup job as an ISM action for complete index management. This allows you to roll up an index after a certain event such as a rollover, index age reaching a certain point, index becoming read-only, and so on. You can also have rollover and index rollup jobs running in sequence, where the rollover first moves the current index to a warm node and then the index rollup job creates a new index with the minimized data on the hot node.</li>
+</ol>
+
+<h2 id="create-an-index-rollup-job">Create an Index Rollup Job</h2>
+
+<p>To get started, choose <strong>Index Management</strong> in OpenSearch Dashboards.
+Select <strong>Rollup Jobs</strong> and choose <strong>Create rollup job</strong>.</p>
+
+<h3 id="step-1-set-up-indices">Step 1: Set up indices</h3>
+
+<ol>
+  <li>In the <strong>Job name and description</strong> section, specify a unique name and an optional description for the index rollup job.</li>
+  <li>In the <strong>Indices</strong> section, select the source and target index. The source index is the one that you want to roll up. The source index remains as is, the index rollup job creates a new index referred to as a target index. The target index is where the index rollup results are saved. For target index, you can either type in a name for a new index or you select an existing index.</li>
+  <li>Choose <strong>Next</strong></li>
+</ol>
+
+<p>After you create an index rollup job, you can’t change your index selections.</p>
+
+<h3 id="step-2-define-aggregations-and-metrics">Step 2: Define aggregations and metrics</h3>
+
+<p>Select the attributes with the aggregations (terms and histograms) and metrics (avg, sum, max, min, and value count) that you want to roll up. Make sure you don’t add a lot of highly granular attributes, because you won’t save much space.</p>
+
+<p>For example, consider a dataset of cities and demographics within those cities. You can aggregate based on cities and specify demographics within a city as metrics.
+The order in which you select attributes is critical. A city followed by a demographic is different from a demographic followed by a city.</p>
+
+<ol>
+  <li>In the <strong>Time aggregation</strong> section, select a timestamp field. Choose between a <strong>Fixed</strong> or <strong>Calendar</strong> interval type and specify the interval and timezone. The index rollup job uses this information to create a date histogram for the timestamp field.</li>
+  <li>(Optional) Add additional aggregations for each field. You can choose terms aggregation for all field types and histogram aggregation only for numeric fields.</li>
+  <li>(Optional) Add additional metrics for each field. You can choose between <strong>All</strong>, <strong>Min</strong>, <strong>Max</strong>, <strong>Sum</strong>, <strong>Avg</strong>, or <strong>Value Count</strong>.</li>
+  <li>Choose <strong>Next</strong>.</li>
+</ol>
+
+<h3 id="step-3-specify-schedule">Step 3: Specify schedule</h3>
+
+<p>Specify a schedule to roll up your indices as it’s being ingested. The index rollup job is enabled by default.</p>
+
+<ol>
+  <li>Specify if the data is continuous or not.</li>
+  <li>For roll up execution frequency, select <strong>Define by fixed interval</strong> and specify the <strong>Rollup interval</strong> and the time unit or <strong>Define by cron expression</strong> and add in a cron expression to select the interval. To learn how to define a cron expression, see <a href="http://localhost:4000/docs/latest/monitoring-plugins/alerting/cron/">Alerting</a>.</li>
+  <li>Specify the number of pages per execution process. A larger number means faster execution and more cost for memory.</li>
+  <li>(Optional) Add a delay to the roll up executions. This is the amount of time the job waits for data ingestion to accommodate any processing time. For example, if you set this value to 10 minutes, an index rollup that executes at 2 PM to roll up 1 PM to 2 PM of data starts at 2:10 PM.</li>
+  <li>Choose <strong>Next</strong>.</li>
+</ol>
+
+<h3 id="step-4-review-and-create">Step 4: Review and create</h3>
+
+<p>Review your configuration and select <strong>Create</strong>.</p>
+
+<h3 id="step-5-search-the-target-index">Step 5: Search the target index</h3>
+
+<p>You can use the standard <code class="language-plaintext highlighter-rouge">_search</code> API to search the target index. Make sure that the query matches the constraints of the target index. For example, if you don’t set up terms aggregations on a field, you don’t receive results for terms aggregations. If you don’t set up the maximum aggregations, you don’t receive results for maximum aggregations.</p>
+
+<p>You can’t access the internal structure of the data in the target index because the plugin automatically rewrites the query in the background to suit the target index. This is to make sure you can use the same query for the source and target index.</p>
+
+<p>To query the target index, set <code class="language-plaintext highlighter-rouge">size</code> to 0:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">target_index/_search</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"aggs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"avg_cpu"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"avg"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cpu_usage"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Consider a scenario where you collect rolled up data from 1 PM to 9 PM in hourly intervals and live data from 7 PM to 11 PM in minutely intervals. If you execute an aggregation over these in the same query, for 7 PM to 9 PM, you see an overlap of both rolled up data and live data because they get counted twice in the aggregations.</p>
+
+<h2 id="sample-walkthrough">Sample Walkthrough</h2>
+
+<p>This walkthrough uses the OpenSearch Dashboards sample e-commerce data. To add that sample data, log in to OpenSearch Dashboards, choose <strong>Home</strong> and <strong>Try our sample data</strong>. For <strong>Sample eCommerce orders</strong>, choose <strong>Add data</strong>.</p>
+
+<p>Then run a search:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">opensearch_dashboards_sample_data_ecommerce/_search</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response">Sample response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"took"</span><span class="p">:</span><span class="w"> </span><span class="mi">23</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"timed_out"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_shards"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"successful"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"skipped"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"failed"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"hits"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"total"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"value"</span><span class="p">:</span><span class="w"> </span><span class="mi">4675</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"relation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eq"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"max_score"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"hits"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"opensearch_dashboards_sample_data_ecommerce"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"_doc"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jlMlwXcBQVLeQPrkC_kQ"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_score"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_source"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"category"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="s2">"Women's Clothing"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"Women's Accessories"</span><span class="w">
+          </span><span class="p">],</span><span class="w">
+          </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"EUR"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"customer_first_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Selena"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"customer_full_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Selena Mullins"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"customer_gender"</span><span class="p">:</span><span class="w"> </span><span class="s2">"FEMALE"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"customer_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"customer_last_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mullins"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"customer_phone"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"day_of_week"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Saturday"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"day_of_week_i"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"selena@mullins-family.zzz"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"manufacturer"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="s2">"Tigress Enterprises"</span><span class="w">
+          </span><span class="p">],</span><span class="w">
+          </span><span class="nl">"order_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2021-02-27T03:56:10+00:00"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"order_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">581553</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"products"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"base_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">24.99</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"discount_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"manufacturer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Tigress Enterprises"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"tax_amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"product_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">19240</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Women's Clothing"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"sku"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ZO0064500645"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"taxless_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">24.99</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"unit_discount_amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"min_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">12.99</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sold_product_581553_19240"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"discount_amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"created_on"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2016-12-24T03:56:10+00:00"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"product_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Blouse - port royal"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"price"</span><span class="p">:</span><span class="w"> </span><span class="mf">24.99</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"taxful_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">24.99</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"base_unit_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">24.99</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"base_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.99</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"discount_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"manufacturer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Tigress Enterprises"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"tax_amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"product_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">17221</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Women's Accessories"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"sku"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ZO0085200852"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"taxless_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.99</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"unit_discount_amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"min_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.06</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sold_product_581553_17221"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"discount_amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"created_on"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2016-12-24T03:56:10+00:00"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"product_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Snood - rose"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"price"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.99</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"taxful_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.99</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"base_unit_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.99</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">],</span><span class="w">
+          </span><span class="nl">"sku"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="s2">"ZO0064500645"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"ZO0085200852"</span><span class="w">
+          </span><span class="p">],</span><span class="w">
+          </span><span class="nl">"taxful_total_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">35.98</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"taxless_total_price"</span><span class="p">:</span><span class="w"> </span><span class="mf">35.98</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"total_quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"total_unique_products"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"user"</span><span class="p">:</span><span class="w"> </span><span class="s2">"selena"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"geoip"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"country_iso_code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MA"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"location"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"lon"</span><span class="p">:</span><span class="w"> </span><span class="mi">-8</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"lat"</span><span class="p">:</span><span class="w"> </span><span class="mf">31.6</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="nl">"region_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Marrakech-Tensift-Al Haouz"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"continent_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Africa"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"city_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Marrakesh"</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"event"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"dataset"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_ecommerce"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="err">...</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Create an index rollup job.
+This example picks the <code class="language-plaintext highlighter-rouge">order_date</code>, <code class="language-plaintext highlighter-rouge">customer_gender</code>, <code class="language-plaintext highlighter-rouge">geoip.city_name</code>, <code class="language-plaintext highlighter-rouge">geoip.region_name</code>, and <code class="language-plaintext highlighter-rouge">day_of_week</code> fields and rolls them into an <code class="language-plaintext highlighter-rouge">example_rollup</code> target index:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_rollup/jobs/example</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"rollup"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minutes"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1602100553</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"last_updated_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1602100553</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"An example policy that rolls up the sample ecommerce data"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"opensearch_dashboards_sample_data_ecommerce"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"example_rollup"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"delay"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"continuous"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"date_histogram"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order_date"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"fixed_interval"</span><span class="p">:</span><span class="w"> </span><span class="s2">"60m"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"timezone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"America/Los_Angeles"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"geoip.city_name"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"geoip.region_name"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"taxless_total_price"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"avg"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"max"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"min"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"value_count"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"avg"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"max"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You can query the <code class="language-plaintext highlighter-rouge">example_rollup</code> index for the terms aggregations on the fields set up in the rollup job.
+You get back the same response that you would on the original <code class="language-plaintext highlighter-rouge">opensearch_dashboards_sample_data_ecommerce</code> source index.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">example_rollup/_search</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"bool"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"must"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"term"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"geoip.region_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"California"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"daily_numbers"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"aggs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"per_city"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"geoip.city_name"</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"average quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+               </span><span class="nl">"avg"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"total_revenue"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"taxless_total_price"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-1">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"took"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"timed_out"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_shards"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"total"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"successful"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"skipped"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"failed"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"hits"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"total"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">281</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"relation"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"eq"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"max_score"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"hits"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">]</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"aggregations"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"daily_numbers"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Friday"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">59</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"total_revenue"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">4858.84375</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"per_city"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+              </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Los Angeles"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">59</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"average quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">2.305084745762712</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Saturday"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">46</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"total_revenue"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">3547.203125</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"per_city"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+              </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Los Angeles"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">46</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"average quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">2.260869565217391</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Tuesday"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">45</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"total_revenue"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">3983.28125</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"per_city"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+              </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Los Angeles"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">45</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"average quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">2.2888888888888888</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Sunday"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">44</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"total_revenue"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">3308.1640625</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"per_city"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+              </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Los Angeles"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">44</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"average quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">2.090909090909091</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Thursday"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">40</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"total_revenue"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">2876.125</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"per_city"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+              </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Los Angeles"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">40</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"average quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">2.3</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Monday"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">38</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"total_revenue"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">2673.453125</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"per_city"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+              </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Los Angeles"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">38</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"average quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">2.1578947368421053</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Wednesday"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">38</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"total_revenue"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">3202.453125</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"per_city"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+              </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Los Angeles"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">38</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"average quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">2.236842105263158</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="the-doc_count-field">The doc_count field</h2>
+
+<p>The <code class="language-plaintext highlighter-rouge">doc_count</code> field in bucket aggregations contains the number of documents collected in each bucket. When calculating the bucket’s <code class="language-plaintext highlighter-rouge">doc_count</code>, the number of documents is incremented by the number of the pre-aggregated documents in each summary document. The <code class="language-plaintext highlighter-rouge">doc_count</code> returned from rollup searches represents the total number of matching documents from the source index. The document count for each bucket is the same whether you search the source index or the rollup target index.</p>
+
+<h2 id="query-string-queries">Query string queries</h2>
+
+<p>To take advantage of shorter and easier to write strings in Query DSL, you can use <a href="http://localhost:4000/docs/latest/opensearch/query-dsl/query-string/">query strings</a> to simplify search queries in rollup indexes. To use query strings, add the following fields to your rollup search request.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"query_string"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="s2">"field_name:field_value"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The following example uses a query string with a <code class="language-plaintext highlighter-rouge">*</code> wildcard operator to search inside a rollup index called <code class="language-plaintext highlighter-rouge">my_server_logs_rollup</code>.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">my_server_logs_rollup/_search</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"query_string"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="s2">"email* OR inventory"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"default_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"service_name"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">  
+  
+  </span><span class="nl">"aggs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"service_name"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"service_name"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"aggs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"region"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"region"</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"aggs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"average quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+               </span><span class="nl">"avg"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cpu_usage"</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>For more information on which parameters are supported in query strings, see <a href="http://localhost:4000/docs/latest/opensearch/query-dsl/query-string/#parameters">Advanced filter options</a>.</p>
+
+<h2 id="dynamic-target-index">Dynamic target index</h2>
+
+<style>
+.nobr { white-space: nowrap }
+</style>
+
+<p>In ISM rollup, the <code class="language-plaintext highlighter-rouge">target_index</code> field may contain a template that is compiled at the time of each rollup indexing. For example, if you specify the <code class="language-plaintext highlighter-rouge">target_index</code> field as <span style="white-space: nowrap"><code class="language-plaintext highlighter-rouge">rollup_ndx-{{ctx.source_index}}</code>,</span> the source index <code class="language-plaintext highlighter-rouge">log-000001</code> will roll up into a target index <code class="language-plaintext highlighter-rouge">rollup_ndx-log-000001</code>. This allows you to roll up data into multiple time-based indices, with one rollup job created for each source index.</p>
+
+<p class="note">The <code class="language-plaintext highlighter-rouge">source_index</code> parameter in <code class="language-plaintext highlighter-rouge">{{ctx.source_index}}</code> cannot contain wildcards.</p>
+
+<h2 id="searching-multiple-rollup-indices">Searching multiple rollup indices</h2>
+
+<p>When data is rolled up into multiple target indices, you can run one search across all of the rollup indices. To search multiple target indices that have the same rollup, specify the index names as a comma-separated list or a wildcard pattern. For example, with <code class="language-plaintext highlighter-rouge">target_index</code> as <span style="white-space: nowrap"><code class="language-plaintext highlighter-rouge">rollup_ndx-{{ctx.source_index}}</code></span> and source indices that start with <code class="language-plaintext highlighter-rouge">log</code>, specify the <code class="language-plaintext highlighter-rouge">rollup_ndx-log*</code> pattern. Or, to search for rolled up log-000001 and log-000002 indices, specify the <code class="language-plaintext highlighter-rouge">rollup_ndx-log-000001,rollup_ndx-log-000002</code> list.</p>
+
+<p class="note">You cannot search a mix of rollup and non-rollup indices with the same query.</p>
+
+<h2 id="example">Example</h2>
+
+<p>The following example demonstrates the <code class="language-plaintext highlighter-rouge">doc_count</code> field, dynamic index names, and searching multiple rollup indices with the same rollup.</p>
+
+<p><strong>Step 1:</strong> Add an index template for ISM to manage the rolling over of the indices aliased by <code class="language-plaintext highlighter-rouge">log</code>.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_index_template/ism_rollover</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"index_patterns"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"log*"</span><span class="p">],</span><span class="w">
+  </span><span class="nl">"template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"settings"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"plugins.index_state_management.rollover_alias"</span><span class="p">:</span><span class="w"> </span><span class="s2">"log"</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+ </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><strong>Step 2:</strong> Set up an ISM rollover policy to roll over any index whose name starts with <code class="language-plaintext highlighter-rouge">log*</code> after one document is uploaded to it, and then roll up the individual backing index. The target index name is dynamically generated from the source index name by prepending the string <code class="language-plaintext highlighter-rouge">rollup_ndx-</code> to the source index name.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_ism/policies/rollover_policy</span><span class="w"> 
+</span><span class="p">{</span><span class="w"> 
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> 
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Example rollover policy."</span><span class="p">,</span><span class="w"> 
+    </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w"> 
+    </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> 
+      </span><span class="p">{</span><span class="w"> 
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollover"</span><span class="p">,</span><span class="w"> 
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> 
+          </span><span class="p">{</span><span class="w"> 
+            </span><span class="nl">"rollover"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> 
+              </span><span class="nl">"min_doc_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> 
+            </span><span class="p">}</span><span class="w"> 
+          </span><span class="p">}</span><span class="w"> 
+        </span><span class="p">],</span><span class="w"> 
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> 
+          </span><span class="p">{</span><span class="w"> 
+            </span><span class="nl">"state_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rp"</span><span class="w"> 
+          </span><span class="p">}</span><span class="w"> 
+        </span><span class="p">]</span><span class="w"> 
+      </span><span class="p">},</span><span class="w"> 
+      </span><span class="p">{</span><span class="w"> 
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rp"</span><span class="p">,</span><span class="w"> 
+        </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w"> 
+            </span><span class="nl">"rollup"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> 
+              </span><span class="nl">"ism_rollup"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> 
+                </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rollup_ndx-{{ctx.source_index}}"</span><span class="p">,</span><span class="w"> 
+                </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Example rollup job"</span><span class="p">,</span><span class="w"> 
+                </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> 
+                </span><span class="nl">"dimensions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> 
+                  </span><span class="p">{</span><span class="w"> 
+                    </span><span class="nl">"date_histogram"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> 
+                      </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ts"</span><span class="p">,</span><span class="w"> 
+                      </span><span class="nl">"fixed_interval"</span><span class="p">:</span><span class="w"> </span><span class="s2">"60m"</span><span class="p">,</span><span class="w"> 
+                      </span><span class="nl">"timezone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"America/Los_Angeles"</span><span class="w"> 
+                    </span><span class="p">}</span><span class="w"> 
+                  </span><span class="p">},</span><span class="w"> 
+                  </span><span class="p">{</span><span class="w"> 
+                    </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> 
+                      </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"message.keyword"</span><span class="w"> 
+                    </span><span class="p">}</span><span class="w"> 
+                  </span><span class="p">}</span><span class="w"> 
+                </span><span class="p">],</span><span class="w"> 
+                </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> 
+                  </span><span class="p">{</span><span class="w"> 
+                    </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"msg_size"</span><span class="p">,</span><span class="w"> 
+                    </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> 
+                      </span><span class="p">{</span><span class="w"> 
+                        </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w"> 
+                      </span><span class="p">}</span><span class="w"> 
+                    </span><span class="p">]</span><span class="w">
+                  </span><span class="p">}</span><span class="w"> 
+                </span><span class="p">]</span><span class="w">
+              </span><span class="p">}</span><span class="w"> 
+            </span><span class="p">}</span><span class="w"> 
+          </span><span class="p">}</span><span class="w"> 
+        </span><span class="p">],</span><span class="w"> 
+        </span><span class="nl">"transitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> 
+      </span><span class="p">}</span><span class="w"> 
+    </span><span class="p">],</span><span class="w"> 
+    </span><span class="nl">"ism_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> 
+      </span><span class="nl">"index_patterns"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"log*"</span><span class="p">],</span><span class="w"> 
+      </span><span class="nl">"priority"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w"> 
+    </span><span class="p">}</span><span class="w"> 
+  </span><span class="p">}</span><span class="w"> 
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><strong>Step 3:</strong> Create an index named <code class="language-plaintext highlighter-rouge">log-000001</code> and set up an alias <code class="language-plaintext highlighter-rouge">log</code> for it.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">log</span><span class="mi">-000001</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"aliases"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"log"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"is_write_index"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><strong>Step 4:</strong> Index four documents into the index created above. Two of the documents have the message “Success”, and two have the message “Error”.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">log/_doc?refresh=</span><span class="kc">true</span><span class="w"> 
+</span><span class="p">{</span><span class="w"> 
+  </span><span class="nl">"ts"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-08-26T09:28:48-04:00"</span><span class="p">,</span><span class="w"> 
+  </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Success"</span><span class="p">,</span><span class="w"> 
+  </span><span class="nl">"msg_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w"> 
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">log/_doc?refresh=</span><span class="kc">true</span><span class="w"> 
+</span><span class="p">{</span><span class="w"> 
+  </span><span class="nl">"ts"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-08-26T10:06:25-04:00"</span><span class="p">,</span><span class="w"> 
+  </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Error"</span><span class="p">,</span><span class="w"> 
+  </span><span class="nl">"msg_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="w"> 
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">log/_doc?refresh=</span><span class="kc">true</span><span class="w"> 
+</span><span class="p">{</span><span class="w"> 
+  </span><span class="nl">"ts"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-08-26T10:23:54-04:00"</span><span class="p">,</span><span class="w"> 
+  </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Error"</span><span class="p">,</span><span class="w"> 
+  </span><span class="nl">"msg_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w"> 
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">log/_doc?refresh=</span><span class="kc">true</span><span class="w"> 
+</span><span class="p">{</span><span class="w"> 
+  </span><span class="nl">"ts"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-08-26T10:53:41-04:00"</span><span class="p">,</span><span class="w"> 
+  </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Success"</span><span class="p">,</span><span class="w"> 
+  </span><span class="nl">"msg_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">40</span><span class="w"> 
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Once you index the first document, the rollover action is executed. This action creates the index <code class="language-plaintext highlighter-rouge">log-000002</code> with <code class="language-plaintext highlighter-rouge">rollover_policy</code> attached to it. Then the rollup action is executed, which creates the rollup index <code class="language-plaintext highlighter-rouge">rollup_ndx-log-000001</code>.</p>
+
+<p class="tip">To monitor the status of rollover and rollup index creation, you can use the ISM explain API: <code class="language-plaintext highlighter-rouge">GET _plugins/_ism/explain</code></p>
+
+<p><strong>Step 5:</strong> Search the rollup index.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">rollup_ndx-log-*/_search</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"message_numbers"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"message.keyword"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"aggs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"per_message"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"message.keyword"</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"sum_message"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"msg_size"</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The response contains two buckets, “Error” and “Success”, and the document count for each bucket is 2:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"took"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"timed_out"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_shards"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"total"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"successful"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"skipped"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"failed"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"hits"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"total"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"relation"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"eq"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"max_score"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"hits"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">]</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"aggregations"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"message_numbers"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Success"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"per_message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+              </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Success"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"sum_message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">50.0</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Error"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"per_message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"doc_count_error_upper_bound"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"sum_other_doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"buckets"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+              </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Error"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"doc_count"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"sum_message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">50.0</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+:ET

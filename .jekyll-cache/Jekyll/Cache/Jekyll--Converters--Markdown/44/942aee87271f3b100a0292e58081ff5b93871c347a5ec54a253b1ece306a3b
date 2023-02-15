@@ -1,0 +1,969 @@
+I"�I<h1 id="transforms-apis">Transforms APIs</h1>
+
+<p>Aside from using OpenSearch Dashboards, you can also use the REST API to create, start, stop, and complete other operations relative to transform jobs.</p>
+
+<h4 id="table-of-contents">Table of contents</h4>
+<ul id="markdown-toc">
+  <li><a href="#create-a-transform-job" id="markdown-toc-create-a-transform-job">Create a transform job</a>    <ul>
+      <li><a href="#request-format" id="markdown-toc-request-format">Request format</a></li>
+      <li><a href="#path-parameters" id="markdown-toc-path-parameters">Path parameters</a></li>
+      <li><a href="#request-body-fields" id="markdown-toc-request-body-fields">Request body fields</a></li>
+    </ul>
+  </li>
+  <li><a href="#update-a-transform-job" id="markdown-toc-update-a-transform-job">Update a transform job</a>    <ul>
+      <li><a href="#request-format-1" id="markdown-toc-request-format-1">Request format</a></li>
+      <li><a href="#query-parameters" id="markdown-toc-query-parameters">Query parameters</a></li>
+      <li><a href="#request-body-fields-1" id="markdown-toc-request-body-fields-1">Request body fields</a></li>
+    </ul>
+  </li>
+  <li><a href="#get-a-transform-jobs-details" id="markdown-toc-get-a-transform-jobs-details">Get a transform job’s details</a>    <ul>
+      <li><a href="#request-format-2" id="markdown-toc-request-format-2">Request format</a></li>
+      <li><a href="#query-parameters-1" id="markdown-toc-query-parameters-1">Query parameters</a></li>
+    </ul>
+  </li>
+  <li><a href="#start-a-transform-job" id="markdown-toc-start-a-transform-job">Start a transform job</a>    <ul>
+      <li><a href="#request-format-3" id="markdown-toc-request-format-3">Request format</a></li>
+    </ul>
+  </li>
+  <li><a href="#stop-a-transform-job" id="markdown-toc-stop-a-transform-job">Stop a transform job</a>    <ul>
+      <li><a href="#request-format-4" id="markdown-toc-request-format-4">Request format</a></li>
+    </ul>
+  </li>
+  <li><a href="#get-the-status-of-a-transform-job" id="markdown-toc-get-the-status-of-a-transform-job">Get the status of a transform job</a>    <ul>
+      <li><a href="#request-format-5" id="markdown-toc-request-format-5">Request format</a></li>
+    </ul>
+  </li>
+  <li><a href="#preview-a-transform-jobs-results" id="markdown-toc-preview-a-transform-jobs-results">Preview a transform job’s results</a></li>
+  <li><a href="#delete-a-transform-job" id="markdown-toc-delete-a-transform-job">Delete a transform job</a>    <ul>
+      <li><a href="#request-format-6" id="markdown-toc-request-format-6">Request format</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="create-a-transform-job">Create a transform job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Creates a transform job.</p>
+
+<h3 id="request-format">Request format</h3>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_transform/&lt;transform_id&gt;</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="path-parameters">Path parameters</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Data Type</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">transform_id</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">Transform ID</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="request-body-fields">Request body fields</h3>
+
+<p>You can specify the following options in the HTTP request body:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Option</th>
+      <th style="text-align: left">Data Type</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">enabled</td>
+      <td style="text-align: left">Boolean</td>
+      <td style="text-align: left">If true, the transform job is enabled at creation.</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">continuous</td>
+      <td style="text-align: left">Boolean</td>
+      <td style="text-align: left">Specifies whether the transform job should be continuous. Continuous jobs execute every time they are scheduled according to the <code class="language-plaintext highlighter-rouge">schedule</code> field and run based off of newly transformed buckets as well as any new data added to source indexes. Non-continuous jobs execute only once. Default is false.</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">schedule</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">The schedule for the transform job.</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">start_time</td>
+      <td style="text-align: left">Integer</td>
+      <td style="text-align: left">The Unix epoch time of the transform job’s start time.</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">description</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">Describes the transform job.</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">metadata_id</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">Any metadata to be associated with the transform job.</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">source_index</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">The source index containing the data to be transformed.</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">target_index</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">The target index the newly transformed data is added to. You can create a new index or update an existing one.</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">data_selection_query</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">The query DSL to use to filter a subset of the source index for the transform job. See <a href="http://localhost:4000/docs/latest/opensearch/query-dsl">query domain-specific language(DSL)</a> for more information.</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">page_size</td>
+      <td style="text-align: left">Integer</td>
+      <td style="text-align: left">The number of buckets IM processes and indexes concurrently. A higher number results in better performance, but it requires more memory. If your machine runs out of memory, Index Management (IM) automatically adjusts this field and retries until the operation succeeds.</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">groups</td>
+      <td style="text-align: left">Array</td>
+      <td style="text-align: left">Specifies the grouping(s) to use in the transform job. Supported groups are <code class="language-plaintext highlighter-rouge">terms</code>, <code class="language-plaintext highlighter-rouge">histogram</code>, and <code class="language-plaintext highlighter-rouge">date_histogram</code>. For more information, see <a href="http://localhost:4000/docs/latest/opensearch/bucket-agg">Bucket Aggregations</a>.</td>
+      <td style="text-align: left">Yes if not using aggregations.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">source_field</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">The field(s) to transform.</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">aggregations</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">The aggregations to use in the transform job. Supported aggregations are <code class="language-plaintext highlighter-rouge">sum</code>, <code class="language-plaintext highlighter-rouge">max</code>, <code class="language-plaintext highlighter-rouge">min</code>, <code class="language-plaintext highlighter-rouge">value_count</code>, <code class="language-plaintext highlighter-rouge">avg</code>, <code class="language-plaintext highlighter-rouge">scripted_metric</code>, and <code class="language-plaintext highlighter-rouge">percentiles</code>. For more information, see <a href="http://localhost:4000/docs/latest/opensearch/metric-agg">Metric Aggregations</a>.</td>
+      <td style="text-align: left">Yes if not using groups.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="sample-request">Sample Request</h4>
+
+<p>The following request creates a transform job with the id <code class="language-plaintext highlighter-rouge">sample</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_transform/sample</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"transform"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"continuous"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minutes"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1602100553</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sample transform job"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_index"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_target"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data_selection_query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"groups"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gender"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_seq_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">13</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_primary_term"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"transform"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"transform_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"continuous"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621467964243</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minutes"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"metadata_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621467964243</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"enabled_at"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621467964243</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sample transform job"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_index"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data_selection_query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"boost"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_target"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+    </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"groups"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gender"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="update-a-transform-job">Update a transform job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Updates the transform job if <code class="language-plaintext highlighter-rouge">transform_id</code> already exists. For this request you must specify the sequence number and primary term of the transform to be updated. To get these, use the <a href="#get-a-transform-jobs-details">Get a transform job’s details</a> API call.</p>
+
+<h3 id="request-format-1">Request format</h3>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_transform/&lt;transform_id&gt;?if_seq_no=&lt;seq_no&gt;&amp;if_primary_term=&lt;primary_term&gt;</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="query-parameters">Query parameters</h3>
+
+<p>The update operation supports the following query parameters:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">seq_no</code></td>
+      <td style="text-align: left">Only perform the transform operation if the last operation that changed the transform job has the specified sequence number.</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">primary_term</code></td>
+      <td style="text-align: left">Only perform the transform operation if the last operation that changed the transform job has the specified sequence term.</td>
+      <td style="text-align: left">Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="request-body-fields-1">Request body fields</h3>
+
+<p>You can update the following fields.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Option</th>
+      <th style="text-align: left">Data Type</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">schedule</td>
+      <td style="text-align: left">Object</td>
+      <td style="text-align: left">The schedule for the transform job. Contains the fields <code class="language-plaintext highlighter-rouge">interval.start_time</code>, <code class="language-plaintext highlighter-rouge">interval.period</code>, and <code class="language-plaintext highlighter-rouge">interval.unit</code>.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">start_time</td>
+      <td style="text-align: left">Integer</td>
+      <td style="text-align: left">The Unix epoch start time of the transform job.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">period</td>
+      <td style="text-align: left">Integer</td>
+      <td style="text-align: left">How often to execute the transform job.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">unit</td>
+      <td style="text-align: left">String</td>
+      <td style="text-align: left">The unit of time associated with the execution period. Available options are <code class="language-plaintext highlighter-rouge">Minutes</code>, <code class="language-plaintext highlighter-rouge">Hours</code>, and <code class="language-plaintext highlighter-rouge">Days</code>.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">description</td>
+      <td style="text-align: left">Integer</td>
+      <td style="text-align: left">Describes the transform job.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">page_size</td>
+      <td style="text-align: left">Integer</td>
+      <td style="text-align: left">The number of buckets IM processes and indexes concurrently. A higher number results in better performance, but it requires more memory. If your machine runs out of memory, IM automatically adjusts this field and retries until the operation succeeds.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="sample-request-1">Sample Request</h4>
+
+<p>The following request updates a transform job with the id <code class="language-plaintext highlighter-rouge">sample</code>, sequence number <code class="language-plaintext highlighter-rouge">13</code>, and primary term <code class="language-plaintext highlighter-rouge">1</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_transform/sample?if_seq_no=</span><span class="mi">13</span><span class="err">&amp;if_primary_term=</span><span class="mi">1</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"transform"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minutes"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1602100553</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sample transform job"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_index"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_target"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"data_selection_query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"groups"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gender"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-1">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_transform/sample?if_seq_no=</span><span class="mi">13</span><span class="err">&amp;if_primary_term=</span><span class="mi">1</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"transform"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minutes"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1602100553</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sample transform job"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_index"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_target"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data_selection_query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"groups"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gender"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="get-a-transform-jobs-details">Get a transform job’s details</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Returns a transform job’s details.</p>
+
+<h3 id="request-format-2">Request format</h3>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_transform/&lt;transform_id&gt;</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-request-2">Sample Request</h4>
+
+<p>The following request returns the details of the transform job with the id <code class="language-plaintext highlighter-rouge">sample</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_transform/sample</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-2">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_seq_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">13</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"_primary_term"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"transform"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"transform_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"continuous"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621467964243</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minutes"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"metadata_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621467964243</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"enabled_at"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621467964243</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sample transform job"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_index"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data_selection_query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"boost"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_target"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+    </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"groups"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gender"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You can also get details of all transform jobs by omitting <code class="language-plaintext highlighter-rouge">transform_id</code>.</p>
+
+<h4 id="sample-request-3">Sample Request</h4>
+
+<p>The following request returns the details of all transform jobs:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_transform/</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-3">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"total_transforms"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"transforms"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"_seq_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">13</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"_primary_term"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"transform"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"transform_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"continuous"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621467964243</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minutes"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"metadata_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621467964243</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"enabled_at"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621467964243</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sample transform job"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_index"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"data_selection_query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"boost"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_target"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+        </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"groups"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gender"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="query-parameters-1">Query parameters</h3>
+
+<p>You can specify the following GET API operation’s query parameters to filter the results.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Parameter</th>
+      <th style="text-align: left">Description</th>
+      <th style="text-align: left">Required</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">from</td>
+      <td style="text-align: left">The starting transform to return. Default is 0.</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">size</td>
+      <td style="text-align: left">Specifies the number of transforms to return. Default is 10.</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">search</td>
+      <td style="text-align: left">The search term to use to filter results.</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">sortField</td>
+      <td style="text-align: left">The field to sort results with.</td>
+      <td style="text-align: left">No</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">sortDirection</td>
+      <td style="text-align: left">Specifies the direction to sort results in. Can be <code class="language-plaintext highlighter-rouge">ASC</code> or <code class="language-plaintext highlighter-rouge">DESC</code>. Default is ASC.</td>
+      <td style="text-align: left">No</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="sample-request-4">Sample Request</h4>
+
+<p>The following request returns two results starting from transform <code class="language-plaintext highlighter-rouge">8</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_transform?size=</span><span class="mi">2</span><span class="err">&amp;from=</span><span class="mi">8</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-4">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"total_transforms"</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"transforms"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample8"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"_seq_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">93</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"_primary_term"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"transform"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"transform_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample8"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1622063596812</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minutes"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"metadata_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"y4hFAB2ZURQ2dzY7BAMxWA"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="mi">1622063657233</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"enabled_at"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sample transform job"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_index3"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"data_selection_query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"boost"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_target3"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+        </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"groups"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gender"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample9"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"_seq_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">98</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"_primary_term"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"transform"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"transform_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample9"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"schema_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1622063598065</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minutes"</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"metadata_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"x8tCIiYMTE3veSbIJkit5A"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="mi">1622063658388</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"enabled_at"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sample transform job"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_index4"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"data_selection_query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"boost"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_target4"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+        </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"groups"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gender"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">},</span><span class="w">
+          </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="start-a-transform-job">Start a transform job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Transform jobs created using the API are automatically enabled, but if you ever need to enable a job, you can use the start API operation.</p>
+
+<h3 id="request-format-3">Request format</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>POST _plugins/_transform/&lt;transform_id&gt;/_start
+</code></pre></div></div>
+
+<h4 id="sample-request-5">Sample Request</h4>
+
+<p>The following request starts the transform job with the ID <code class="language-plaintext highlighter-rouge">sample</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">_plugins/_transform/sample/_start</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-5">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"acknowledged"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="stop-a-transform-job">Stop a transform job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Stops a transform job.</p>
+
+<h3 id="request-format-4">Request format</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>POST _plugins/_transform/&lt;transform_id&gt;/_stop
+</code></pre></div></div>
+
+<h4 id="sample-request-6">Sample Request</h4>
+
+<p>The following request stops the transform job with the ID <code class="language-plaintext highlighter-rouge">sample</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">_plugins/_transform/sample/_stop</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-6">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"acknowledged"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="get-the-status-of-a-transform-job">Get the status of a transform job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Returns the status and metadata of a transform job.</p>
+
+<h3 id="request-format-5">Request format</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET _plugins/_transform/&lt;transform_id&gt;/_explain
+</code></pre></div></div>
+
+<h4 id="sample-request-7">Sample Request</h4>
+
+<p>The following request returns the details of the transform job with the ID <code class="language-plaintext highlighter-rouge">sample</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">GET</span><span class="w"> </span><span class="err">_plugins/_transform/sample/_explain</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-7">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"sample"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"metadata_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PzmjweME5xbgkenl9UpsYw"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"transform_metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"continuous_stats"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"last_timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621883525672</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"documents_behind"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"sample_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">72</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"transform_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"last_updated_at"</span><span class="p">:</span><span class="w"> </span><span class="mi">1621883525873</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"finished"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"failure_reason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"null"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"stats"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"pages_processed"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"documents_processed"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"documents_indexed"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"index_time_in_millis"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"search_time_in_millis"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="preview-a-transform-jobs-results">Preview a transform job’s results</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Returns a preview of what a transformed index would look like.</p>
+
+<h4 id="sample-request-8">Sample Request</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">POST</span><span class="w"> </span><span class="err">_plugins/_transform/_preview</span><span class="w">
+
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"transform"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"period"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Minutes"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mi">1602100553</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test transform"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"source_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_index"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"target_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_target"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"data_selection_query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"match_all"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"page_size"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"groups"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer_gender"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gender"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"terms"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"source_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day_of_week"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"target_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"day"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"aggregations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"sum"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"total_quantity"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-8">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"documents"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">862.0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"gender"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"FEMALE"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"day"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Friday"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">682.0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"gender"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"FEMALE"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"day"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Monday"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">772.0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"gender"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"FEMALE"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"day"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Saturday"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">669.0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"gender"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"FEMALE"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"day"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Sunday"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"quantity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">887.0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"gender"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"FEMALE"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"day"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Thursday"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="delete-a-transform-job">Delete a transform job</h2>
+<p class="label label-purple">Introduced 1.0</p>
+
+<p>Deletes a transform job. This operation does not delete the source or target indexes.</p>
+
+<h3 id="request-format-6">Request format</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DELETE _plugins/_transform/&lt;transform_id&gt;
+</code></pre></div></div>
+
+<h4 id="sample-request-9">Sample Request</h4>
+
+<p>The following request deletes the transform job with the ID <code class="language-plaintext highlighter-rouge">sample</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">DELETE</span><span class="w"> </span><span class="err">_plugins/_transform/sample</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="sample-response-9">Sample Response</h4>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"took"</span><span class="p">:</span><span class="w"> </span><span class="mi">205</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"errors"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"items"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"delete"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"_index"</span><span class="p">:</span><span class="w"> </span><span class="s2">".opensearch-ism-config"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_version"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"result"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deleted"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"forced_refresh"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_shards"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"successful"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"failed"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"_seq_no"</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_primary_term"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+:ET

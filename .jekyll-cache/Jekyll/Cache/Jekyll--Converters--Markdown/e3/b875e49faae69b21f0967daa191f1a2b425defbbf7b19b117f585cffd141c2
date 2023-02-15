@@ -1,0 +1,80 @@
+I"W<h1 id="ism-settings">ISM settings</h1>
+
+<p>We don’t recommend changing these settings; the defaults should work well for most use cases.</p>
+
+<p>Index State Management (ISM) stores its configuration in the <code class="language-plaintext highlighter-rouge">.opendistro-ism-config</code> index. Don’t modify this index without using the <a href="http://localhost:4000/docs/latest/im-plugin/ism/api/">ISM API operations</a>.</p>
+
+<p>All settings are available using the OpenSearch <code class="language-plaintext highlighter-rouge">_cluster/settings</code> operation. None require a restart, and all can be marked <code class="language-plaintext highlighter-rouge">persistent</code> or <code class="language-plaintext highlighter-rouge">transient</code>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Setting</th>
+      <th style="text-align: left">Default</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.enabled</code></td>
+      <td style="text-align: left">True</td>
+      <td style="text-align: left">Specifies whether ISM is enabled or not.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.job_interval</code></td>
+      <td style="text-align: left">5 minutes</td>
+      <td style="text-align: left">The interval at which the managed index jobs are run.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.jitter</code></td>
+      <td style="text-align: left">0.6</td>
+      <td style="text-align: left">A randomized delay that is added to a job’s base run time to prevent a surge of activity from all indices at the same time. A value of 0.6 means a delay of 0-60% of a job interval is added to the base interval. For example, if you have a base interval time of 30 minutes, a value of 0.6 means an amount anywhere between 0 to 18 minutes gets added to your job interval. Maximum is 1, which means an additional interval time of 100%. This maximum cannot exceed <code class="language-plaintext highlighter-rouge">plugins.jobscheduler.jitter_limit</code>, which also has a default of 0.6. For example, if <code class="language-plaintext highlighter-rouge">plugins.index_state_management.jitter</code> is set to 0.8, ISM uses <code class="language-plaintext highlighter-rouge">plugins.jobscheduler.jitter_limit</code> of 0.6 instead.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.coordinator.sweep_period</code></td>
+      <td style="text-align: left">10 minutes</td>
+      <td style="text-align: left">How often the routine background sweep is run.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.coordinator.backoff_millis</code></td>
+      <td style="text-align: left">50 milliseconds</td>
+      <td style="text-align: left">The backoff time between retries for failures in the <code class="language-plaintext highlighter-rouge">ManagedIndexCoordinator</code> (such as when we update managed indices).</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.coordinator.backoff_count</code></td>
+      <td style="text-align: left">2</td>
+      <td style="text-align: left">The count of retries for failures in the <code class="language-plaintext highlighter-rouge">ManagedIndexCoordinator</code>.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.history.enabled</code></td>
+      <td style="text-align: left">True</td>
+      <td style="text-align: left">Specifies whether audit history is enabled or not. The logs from ISM are automatically indexed to a logs document.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.history.max_docs</code></td>
+      <td style="text-align: left">2,500,000</td>
+      <td style="text-align: left">The maximum number of documents before rolling over the audit history index.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.history.max_age</code></td>
+      <td style="text-align: left">24 hours</td>
+      <td style="text-align: left">The maximum age before rolling over the audit history index.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.history.rollover_check_period</code></td>
+      <td style="text-align: left">8 hours</td>
+      <td style="text-align: left">The time between rollover checks for the audit history index.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.history.rollover_retention_period</code></td>
+      <td style="text-align: left">30 days</td>
+      <td style="text-align: left">How long audit history indices are kept.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.index_state_management.allow_list</code></td>
+      <td style="text-align: left">All actions</td>
+      <td style="text-align: left">List of actions that you can use.</td>
+    </tr>
+  </tbody>
+</table>
+:ET

@@ -1,0 +1,53 @@
+I"Z<h1 id="index-rollup-settings">Index rollup settings</h1>
+
+<p>We don’t recommend changing these settings; the defaults should work well for most use cases.</p>
+
+<p>All settings are available using the OpenSearch <code class="language-plaintext highlighter-rouge">_cluster/settings</code> operation. None require a restart, and all can be marked <code class="language-plaintext highlighter-rouge">persistent</code> or <code class="language-plaintext highlighter-rouge">transient</code>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Setting</th>
+      <th style="text-align: left">Default</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.rollup.search.backoff_millis</code></td>
+      <td style="text-align: left">1000 milliseconds</td>
+      <td style="text-align: left">The backoff time between retries for failed rollup jobs.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.rollup.search.backoff_count</code></td>
+      <td style="text-align: left">5</td>
+      <td style="text-align: left">How many retries the plugin should attempt for failed rollup jobs.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.rollup.search.search_all_jobs</code></td>
+      <td style="text-align: left">false</td>
+      <td style="text-align: left">Whether OpenSearch should return all jobs that match all specified search terms. If disabled, OpenSearch returns just one, as opposed to all, of the jobs that matches the search terms.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.rollup.dashboards.enabled</code></td>
+      <td style="text-align: left">true</td>
+      <td style="text-align: left">Whether rollups are enabled in OpenSearch Dashboards.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.rollup.enabled</code></td>
+      <td style="text-align: left">true</td>
+      <td style="text-align: left">Whether the rollup plugin is enabled.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.ingest.backoff_millis</code></td>
+      <td style="text-align: left">1000 milliseconds</td>
+      <td style="text-align: left">The backoff time between data ingestions for rollup jobs.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">plugins.ingest.backoff_count</code></td>
+      <td style="text-align: left">5</td>
+      <td style="text-align: left">How many retries the plugin should attempt for failed ingestions.</td>
+    </tr>
+  </tbody>
+</table>
+:ET

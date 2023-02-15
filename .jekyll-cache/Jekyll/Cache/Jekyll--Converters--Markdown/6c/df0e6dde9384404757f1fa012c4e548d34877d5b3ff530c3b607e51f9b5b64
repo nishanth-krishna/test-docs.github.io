@@ -1,0 +1,117 @@
+I"-<h1 id="index-state-management">Index State Management</h1>
+<p class="label label-yellow">OpenSearch Dashboards</p>
+
+<p>If you analyze time-series data, you likely prioritize new data over old data. You might periodically perform certain operations on older indexes, such as reducing replica count or deleting them.</p>
+
+<p>Index State Management (ISM) is a plugin that lets you automate these periodic, administrative operations by triggering them based on changes in the index age, index size, or number of documents. Using the ISM plugin, you can define <em>policies</em> that automatically handle index rollovers or deletions to fit your use case.</p>
+
+<p>For example, you can define a policy that moves your index into a <code class="language-plaintext highlighter-rouge">read_only</code> state after 30 days and then deletes it after a set period of 90 days. You can also set up the policy to send you a notification message when the index is deleted.</p>
+
+<p>You might want to perform an index rollover after a certain amount of time or run a <code class="language-plaintext highlighter-rouge">force_merge</code> operation on an index during off-peak hours to improve search performance during peak hours.</p>
+
+<p class="note">To use the ISM plugin, your user role needs to be mapped to the <code class="language-plaintext highlighter-rouge">all_access</code> role that gives you full access to the cluster. To learn more, see <a href="http://localhost:4000/docs/latest/security/access-control/users-roles/">Users and roles</a>.</p>
+
+<h2 id="get-started-with-ism">Get started with ISM</h2>
+
+<p>To get started, choose <strong>Index Management</strong> in OpenSearch Dashboards.</p>
+
+<h3 id="step-1-set-up-policies">Step 1: Set up policies</h3>
+
+<p>A policy is a set of rules that describes how an index should be managed. For information about creating a policy, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/policies/">Policies</a>.</p>
+
+<p>You can use the visual editor or JSON editor to create policies. Compared to the JSON editor, the visual editor offers a more structured way of defining policies by separating the process into creating error notifications, defining ISM templates, and adding states. We recommend using the visual editor if you want to see pre-defined fields, such as which actions you can assign to a state or under what conditions a state can transition into a destination state.</p>
+
+<h4 id="visual-editor">Visual editor</h4>
+
+<ol>
+  <li>Choose the <strong>Index Policies</strong> tab.</li>
+  <li>Choose <strong>Create policy</strong>.</li>
+  <li>Choose <strong>Visual editor</strong>.</li>
+  <li>In the <strong>Policy info</strong> section, enter a policy ID and an optional description.</li>
+  <li>In the <strong>Error notification</strong> section, set up an optional error notification that gets sent whenever a policy execution fails. For more information, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/policies#error-notifications">Error notifications</a>. If you’re using auto rollovers in your policy, we recommend setting up error notifications, which notify you of unexpectedly large indexes if rollovers fail.</li>
+  <li>In <strong>ISM templates</strong>, enter any ISM template patterns to automatically apply this policy to future indexes. For example, if you specify a template of <code class="language-plaintext highlighter-rouge">sample-index*</code>, the ISM plugin automatically applies this policy to any indexes whose names start with <code class="language-plaintext highlighter-rouge">sample-index</code>. Your pattern cannot contain any of the following characters: <code class="language-plaintext highlighter-rouge">:</code>, <code class="language-plaintext highlighter-rouge">"</code>, <code class="language-plaintext highlighter-rouge">+</code>, <code class="language-plaintext highlighter-rouge">/</code>, <code class="language-plaintext highlighter-rouge">\</code>, <code class="language-plaintext highlighter-rouge">|</code>, <code class="language-plaintext highlighter-rouge">?</code>, <code class="language-plaintext highlighter-rouge">#</code>, <code class="language-plaintext highlighter-rouge">&gt;</code>, and <code class="language-plaintext highlighter-rouge">&lt;</code>.</li>
+  <li>In <strong>States</strong>, add any states you want to include in the policy. Each state has <a href="http://localhost:4000/docs/latest/im-plugin/ism/policies/#actions">actions</a> the plugin executes when the index enters a certain state, and <a href="http://localhost:4000/docs/latest/im-plugin/ism/policies/#transitions">transitions</a>, which have conditions that, when met, transition the index into a destination state. The first state you create in a policy is automatically set as the initial state. Each policy must have at least one state, but actions and transitions are optional.</li>
+  <li>Choose <strong>Create</strong>.</li>
+</ol>
+
+<h4 id="json-editor">JSON editor</h4>
+
+<ol>
+  <li>Choose the <strong>Index Policies</strong> tab.</li>
+  <li>Choose <strong>Create policy</strong>.</li>
+  <li>Choose <strong>JSON editor</strong>.</li>
+  <li>In the <strong>Name policy</strong> section, enter a policy ID.</li>
+  <li>In the <strong>Define policy</strong> section, enter your policy.</li>
+  <li>Choose <strong>Create</strong>.</li>
+</ol>
+
+<p>After you create a policy, your next step is to attach it to an index or indexes.
+You can set up an <code class="language-plaintext highlighter-rouge">ism_template</code> in the policy so when an index that matches the ISM template pattern is created, the plugin automatically attaches the policy to the index.</p>
+
+<p>The following example demonstrates how to create a policy that automatically gets attached to all indexes whose names start with <code class="language-plaintext highlighter-rouge">index_name-</code>.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_plugins/_ism/policies/policy_id</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"policy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Example policy."</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"default_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"states"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span><span class="w">
+    </span><span class="nl">"ism_template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"index_patterns"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"index_name-*"</span><span class="p">],</span><span class="w">
+      </span><span class="nl">"priority"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If you have more than one template that matches an index pattern, ISM uses the priority value to determine which template to apply.</p>
+
+<p>For an example ISM template policy, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/policies#sample-policy-with-ism-template-for-auto-rollover">Sample policy with ISM template for auto rollover</a>.</p>
+
+<p>Older versions of the plugin include the <code class="language-plaintext highlighter-rouge">policy_id</code> in an index template, so when an index is created that matches the index template pattern, the index will have the policy attached to it:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">PUT</span><span class="w"> </span><span class="err">_index_template/&lt;template_name&gt;</span><span class="w">
+</span><span class="p">{</span><span class="w">
+  </span><span class="nl">"index_patterns"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="s2">"index_name-*"</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"settings"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"opendistro.index_state_management.policy_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"policy_id"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p class="note">The <code class="language-plaintext highlighter-rouge">opendistro.index_state_management.policy_id</code> setting is deprecated. You can continue to automatically manage newly created indexes with the ISM template field.</p>
+
+<h3 id="step-2-attach-policies-to-indexes">Step 2: Attach policies to indexes</h3>
+
+<ol>
+  <li>Choose <strong>indexes</strong>.</li>
+  <li>Choose the index or indexes that you want to attach your policy to.</li>
+  <li>Choose <strong>Apply policy</strong>.</li>
+  <li>From the <strong>Policy ID</strong> menu, choose the policy that you created.
+You can see a preview of your policy.</li>
+  <li>If your policy includes a rollover operation, specify a rollover alias.
+Make sure that the alias that you enter already exists. For more information about the rollover operation, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/policies#rollover">rollover</a>.</li>
+  <li>Choose <strong>Apply</strong>.</li>
+</ol>
+
+<p>After you attach a policy to an index, ISM creates a job that runs every 5 minutes by default to perform policy actions, check conditions, and transition the index into different states. To change the default time interval for this job, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/settings/">Settings</a>.</p>
+
+<p>ISM does not run jobs if the cluster state is red.</p>
+
+<h3 id="step-3-manage-indexes">Step 3: Manage indexes</h3>
+
+<ol>
+  <li>Choose <strong>Managed indexes</strong>.</li>
+  <li>To change your policy, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/managedindexes#change-policy">Change Policy</a>.</li>
+  <li>To attach a rollover alias to your index, select your policy and choose <strong>Add rollover alias</strong>.
+Make sure that the alias that you enter already exists. For more information about the rollover operation, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/policies#rollover">rollover</a>.</li>
+  <li>To remove a policy, choose your policy, and then choose <strong>Remove policy</strong>.</li>
+  <li>To retry a policy, choose your policy, and then choose <strong>Retry policy</strong>.</li>
+</ol>
+
+<p>For information about managing your policies, see <a href="http://localhost:4000/docs/latest/im-plugin/ism/managedindexes/">Managed indexes</a>.</p>
+:ET

@@ -1,0 +1,26 @@
+I"�	<h2 id="200">2.0.0</h2>
+
+<h3 id="remove-mapping-types-parameter">Remove mapping types parameter</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">type</code> parameter has been removed from all OpenSearch API endpoints. Instead, indexes can be categorized by document type. For more details, see issue <a href="https://github.com/opensearch-project/opensearch/issues/1940">#1940</a>.</p>
+
+<h3 id="deprecate-outdated-nomenclature">Deprecate outdated nomenclature</h3>
+
+<p>In order for OpenSearch to include more inclusive naming conventions, we’ve replaced the following terms in our code with more inclusive terms:</p>
+
+<ul>
+  <li>“Whitelist” is now “Allow list”</li>
+  <li>“Blacklist” is now “Deny list”</li>
+  <li>“Master” is now “Cluster Manager”</li>
+</ul>
+
+<p>If you are still using the outdated terms in the context of the security APIs or for node management, your calls and automation will continue to work until the terms are removed later in 2022.</p>
+
+<h3 id="add-opensearch-notifications-plugins">Add OpenSearch Notifications plugins</h3>
+
+<p>In OpenSearch 2.0, the Alerting plugin is now integrated with new plugins for Notifications. If you want to continue to use the notification action in the Alerting plugin, install the new backend plugins <code class="language-plaintext highlighter-rouge">notifications-core</code> and <code class="language-plaintext highlighter-rouge">notifications</code>. If you want to manage notifications in OpenSearch Dashboards, use the new <code class="language-plaintext highlighter-rouge">notificationsDashboards</code> plugin. For more information, see <a href="http://localhost:4000/docs/latest/monitoring-plugins/alerting/monitors#questions-about-destinations">Questions about destinations</a> on the Monitors page.</p>
+
+<h3 id="drop-support-for-jdk-8">Drop support for JDK 8</h3>
+
+<p>A Lucene upgrade forced OpenSearch to drop support for JDK 8. As a consequence, the <a href="http://localhost:4000/docs/latest/clients/java-rest-high-level/">Java high-level REST client</a> no longer supports JDK 8. Restoring JDK 8 support is currently an <code class="language-plaintext highlighter-rouge">opensearch-java</code> proposal <a href="https://github.com/opensearch-project/opensearch-java/issues/156">#156</a> and will require removing OpenSearch core as a dependency from the Java client (issue <a href="https://github.com/opensearch-project/opensearch-java/issues/262">#262</a>).</p>
+:ET
