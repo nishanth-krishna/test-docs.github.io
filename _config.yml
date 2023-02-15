@@ -56,6 +56,9 @@ collections:
   documentation:
     permalink: /:collection/:path/
     output: true
+  karlos:
+    permalink: /:collection/:path/
+    output: true
   # replication-plugin:
   #   permalink: /:collection/:path/
   #   output: true
@@ -127,6 +130,9 @@ just_the_docs:
       nav_fold: true
     documentation:
       name: Documentation
+      nav_fold: true
+    karlos:
+      name: Karlos
       nav_fold: true
     # replication-plugin:
     #   name: Replication plugin
